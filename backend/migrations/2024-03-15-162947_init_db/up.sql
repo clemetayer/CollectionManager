@@ -1,18 +1,18 @@
 -- Your SQL goes here
 CREATE TABLE "tracks" (
 	"id"	INTEGER NOT NULL UNIQUE,
-	"isrc"	TEXT,
-	"title"	TEXT,
+	"isrc"	TEXT NOT NULL,
+	"title"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE "collections" (
 	"id"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT,
+	"name"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE "artists" (
 	"id"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT,
+	"name"	TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE "collection_dependencies" (

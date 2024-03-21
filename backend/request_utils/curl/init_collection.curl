@@ -1,0 +1,5 @@
+curl -XPOST -H "Content-type: application/json" -d '{
+    "name":"test",
+    "modules":["local","deezer"],
+    "from_playlist":"nope"
+}' 'http://localhost:8000/init/collection'

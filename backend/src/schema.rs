@@ -3,7 +3,7 @@
 diesel::table! {
     artists (id) {
         id -> Integer,
-        name -> Nullable<Text>,
+        name -> Text,
     }
 }
 
@@ -18,15 +18,15 @@ diesel::table! {
 diesel::table! {
     collections (id) {
         id -> Integer,
-        name -> Nullable<Text>,
+        name -> Text,
     }
 }
 
 diesel::table! {
     tracks (id) {
         id -> Integer,
-        isrc -> Nullable<Text>,
-        title -> Nullable<Text>,
+        isrc -> Text,
+        title -> Text,
     }
 }
 
