@@ -11,5 +11,5 @@ pub fn init_collection() -> impl Filter<Extract = impl Reply, Error = Rejection>
         .and(warp::post())
         .and(warp::body::json()) //JSON body
         .and(warp::body::content_length_limit(1024 * 16)) // Avoids huge payloads
-        .and_then(handlers::init_collection)
+        .and_then(handlers::collection_management::init_collection)
 }
