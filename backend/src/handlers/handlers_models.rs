@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct InitCollectionInput {
+pub struct InitCollection {
     pub name: String,
-    pub modules: [String;2],
     pub from_playlist: String
 }
