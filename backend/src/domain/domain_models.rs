@@ -4,3 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct InitCollectionDatabase {
     pub name: String
 }
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct CollectionDatabase {
+    pub name: String
+}

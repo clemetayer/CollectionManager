@@ -12,3 +12,7 @@ pub async fn init_collections(options : handlers_models::InitCollection) -> Resu
     };
     return domain::database::init_collection(database_collection).await;
 }
+
+pub async fn list_collections() -> Result<impl Reply, Infallible> {
+    return domain::database::list_collections().await;
+}

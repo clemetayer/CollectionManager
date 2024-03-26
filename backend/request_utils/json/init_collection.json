@@ -1,5 +1,0 @@
-{
-    "name":"test",
-    "modules":["local","deezer"],
-    "from_playlist":"nope"
-}
