@@ -1,18 +1,23 @@
-use std::convert::Infallible;
-use warp::reply::Reply;
-
 use crate::domain::{self, domain_models::InitCollectionDatabase};
 
-use super::handlers_models;
+use super::handlers_models::{self, CollectionListElement};
 
-pub async fn init_collections(options : handlers_models::InitCollection) -> Result<impl Reply, Infallible> {
+pub fn init_collections(options : handlers_models::InitCollection) {
     println!("Creating collection ! {:?}", &options.name);
     let database_collection = InitCollectionDatabase {
         name: options.name
     };
-    return domain::database::init_collection(database_collection).await;
+    domain::database::init_collection(database_collection);
 }
 
-pub async fn list_collections() -> Result<impl Reply, Infallible> {
-    return domain::database::list_collections().await;
+pub fn list_collections() -> Vec<CollectionListElement> {
+    return domain::database::list_collections()
+        .into_iter()
+        .map(|collection|{
+            let collection_element = CollectionListElement {
+                name: collection.name
+            };
+            return collection_element;
+        })
+        .collect::<Vec<_>>();
 }

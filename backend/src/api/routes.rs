@@ -25,7 +25,8 @@ async fn call_init_collection(init_collection_input : InitCollectionInput) -> Re
         name: init_collection_input.name,
         from_playlist: init_collection_input.from_playlist
     };
-    return init_collections(init_collections_data).await;
+    init_collections(init_collections_data);
+    return Ok(warp::reply());
 }
 
 // `GET /collection/list`
@@ -36,5 +37,6 @@ pub fn get_collection_list() -> impl Filter<Extract = impl Reply, Error = Reject
 }
 
 async fn call_get_collection_list() -> Result<impl Reply, Infallible> {
-    return list_collections().await;
+    let collection_list = list_collections();
+    return Ok(warp::reply::json(&collection_list).into_response());
 }

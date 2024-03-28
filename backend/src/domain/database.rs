@@ -1,21 +1,18 @@
 use diesel::prelude::*;
 use backend::models::*;
 use backend::*;
-use warp::reply::{Reply, Response};
-use std::convert::Infallible;
 
 use crate::domain::domain_models::CollectionDatabase;
 
 use super::domain_models::InitCollectionDatabase;
 
-pub async fn init_collection(options : InitCollectionDatabase) -> Result<impl Reply, Infallible> {
+pub fn init_collection(options : InitCollectionDatabase) {
     println!("Creating collection ! {:?}", &options.name);
     let connection = &mut establish_connection();
     create_collection(connection,&options.name);
-    return Ok(warp::reply());
 }
 
-pub async fn list_collections() -> Result<impl Reply, Infallible> {
+pub fn list_collections() -> Vec<CollectionDatabase> {
     use self::schema::collections::dsl::*;
 
     let connection: &mut diesel::prelude::SqliteConnection = &mut establish_connection();
@@ -30,5 +27,5 @@ pub async fn list_collections() -> Result<impl Reply, Infallible> {
             collection_database
         })
         .collect::<Vec<_>>();
-    return Ok(warp::reply::json(&results_database).into_response());
+    return results_database;
 }
