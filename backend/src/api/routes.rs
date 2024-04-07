@@ -42,7 +42,14 @@ async fn call_init_collection(
         from_playlist: init_collection_input.from_playlist,
     };
     match init_collections(init_collections_data) {
-        Ok(_) => Ok(warp::reply()),
+        Ok(_) => {
+            let reply = warp::reply();
+            Ok(warp::reply::with_header(
+                reply,
+                "Access-Control-Allow-Origin",
+                "*",
+            ))
+        }
         Err(_) => Err(warp::reject()),
     }
 }

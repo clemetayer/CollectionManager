@@ -8,6 +8,8 @@ import type Collection from '../models/collection.model';
         value : string,
         disabled ?: boolean
     }
+    let collectionService = new CollectionService();
+
     export default defineComponent({
         name:"collection-select",
         data() {
@@ -18,7 +20,6 @@ import type Collection from '../models/collection.model';
         },
         methods: {
             retrieveCollections() {
-                let collectionService = new CollectionService();
                 collectionService
                     .listCollections()
                     .then((collections) => {
@@ -39,6 +40,7 @@ import type Collection from '../models/collection.model';
             },
             addCollection() {
                 console.log("add collection");
+                collectionService.initCollection('test_vue','http://test_vue.fr');    
             }
         },
         mounted() {
