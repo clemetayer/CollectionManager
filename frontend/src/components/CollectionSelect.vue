@@ -15,7 +15,11 @@ import type Collection from '../models/collection.model';
         data() {
             return {
                 options: [] as SelectOption[],
-                selectedOption: {} as SelectOption
+                selectedOption: {} as SelectOption,
+                open: false,
+                collectionName: "",
+                fromPlaylistChecked: false,
+                fromPlaylist: ""
             }
         },
         methods: {
@@ -39,8 +43,11 @@ import type Collection from '../models/collection.model';
                 console.log(this.selectedOption.value);
             },
             addCollection() {
-                console.log("add collection");
-                collectionService.initCollection('test_vue','http://test_vue.fr');    
+                this.open = true;
+            },
+            onConfirm() {
+                console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
+                collectionService.initCollection(this.collectionName, this.fromPlaylist);
             }
         },
         mounted() {
@@ -50,10 +57,44 @@ import type Collection from '../models/collection.model';
 </script>
 
 <template>
+    <div>
     <center>
         <v-container>
             <ui-select v-model="selectedOption" :options="options" @selected="onSelectCollection($event)"></ui-select>
             <ui-icon-button icon="add" @click="addCollection()"></ui-icon-button>
         </v-container>
     </center>
+    <ui-dialog v-model="open" @confirm="onConfirm">
+        <ui-dialog-title>Enter the collection name</ui-dialog-title>
+        <ui-dialog-content>
+            <form method="dialog">
+                <div>
+                    <label>Collection name :</label>
+                    <ui-textfield
+                        v-model="collectionName"
+                        helper-text-id="collection-name-field-helper-text"
+                    >
+                        Collection name
+                    </ui-textfield>
+                </div>
+                <div>
+                    <ui-form-field>
+                        <label>From playlist :</label>
+                        <ui-checkbox v-model="fromPlaylistChecked" input-id="checkbox"></ui-checkbox>
+                    </ui-form-field>
+                </div>
+                <div v-if="fromPlaylistChecked">
+                    <label>From playlist :</label>
+                    <ui-textfield
+                        v-model="fromPlaylist"
+                        helper-text-id="from-playlist-field-helper-text"
+                    >
+                        Deezer playlist URL
+                    </ui-textfield>
+                </div>
+            </form>
+        </ui-dialog-content>
+        <ui-dialog-actions></ui-dialog-actions>
+    </ui-dialog>
+    </div>
 </template>
