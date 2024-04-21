@@ -1,18 +1,17 @@
 -- Your SQL goes here
 CREATE TABLE "tracks" (
 	"id"	INTEGER NOT NULL UNIQUE,
-	"isrc"	TEXT NOT NULL,
+	"deezer_id"	TEXT NOT NULL UNIQUE,
 	"title"	TEXT NOT NULL,
+	"url" TEXT NOT NULL,
+	"artist" TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE "collections" (
 	"id"	INTEGER NOT NULL UNIQUE,
+	"deezer_id" TEXT NOT NULL UNIQUE,
 	"name"	TEXT NOT NULL,
-	PRIMARY KEY("id" AUTOINCREMENT)
-);
-CREATE TABLE "artists" (
-	"id"	INTEGER NOT NULL UNIQUE,
-	"name"	TEXT NOT NULL,
+	"url" TEXT NOT NULL,
 	PRIMARY KEY("id" AUTOINCREMENT)
 );
 CREATE TABLE "collection_dependencies" (
@@ -29,13 +28,5 @@ CREATE TABLE "tracks_in_collection" (
 	"collection_id"	INTEGER NOT NULL,
     PRIMARY KEY("id" AUTOINCREMENT)
 	FOREIGN KEY("collection_id") REFERENCES collections (id),
-	FOREIGN KEY("track_id") REFERENCES tracks (id)
-);
-CREATE TABLE "tracks_from_artist" (
-    "id" INTEGER NOT NULL UNIQUE,
-	"track_id"	INTEGER NOT NULL,
-	"artist_id"	INTEGER NOT NULL,
-    PRIMARY KEY("id" AUTOINCREMENT)
-	FOREIGN KEY("artist_id") REFERENCES artists (id),
 	FOREIGN KEY("track_id") REFERENCES tracks (id)
 );

@@ -1,14 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct InitCollection {
-    pub name: String,
-    pub from_playlist: Option<String>,
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone)]
-pub struct CollectionListElement {
-    pub name: String,
+pub struct CreatedPlaylist {
+    pub id: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -24,7 +18,6 @@ pub struct Playlist {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Track {
     pub id: u64,
-    pub deezer_id: String,
     pub title: String,
     pub link: String,
     pub artist: String,

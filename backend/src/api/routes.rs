@@ -1,7 +1,7 @@
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
-    collection_management::{init_collections, list_collections},
+    collection_management::{self, get_playlist, init_collections, list_collections},
     handlers_models::InitCollection,
 };
 
@@ -41,7 +41,7 @@ async fn call_init_collection(
         name: init_collection_input.name,
         from_playlist: init_collection_input.from_playlist,
     };
-    match init_collections(init_collections_data) {
+    match init_collections(init_collections_data).await {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
@@ -75,3 +75,24 @@ async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
         }
     }
 }
+
+// pub fn get_deezer_playlist() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+//     warp::path!("playlist")
+//         .and(warp::get()) // Avoids huge payloads
+//         .and_then(call_get_playlist)
+//         .with(&get_cors_config())
+// }
+
+// async fn call_get_playlist() -> Result<impl Reply, Rejection> {
+//     let playlist = collection_management::get_playlist(11043374682).await;
+//     match playlist {
+//         Ok(playlist) => {
+//             let reply = warp::reply::json(&playlist).into_response();
+//             Ok(reply)
+//         }
+//         Err(_) => {
+//             eprintln!("Error while fetching the playlist");
+//             Err(warp::reject())
+//         }
+//     }
+// }
