@@ -53,22 +53,8 @@ async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, Hand
     println!("Creating collection from deezer playlist");
     match get_playlist(playlist_id).await {
         Ok(playlist) => {
-            let database_collection = InitCollectionDatabase {
-                name: playlist.title,
-                url: playlist.url,
-                deezer_id: playlist.id.to_string(),
-            };
-            println!("Initializing collection");
-            match domain::database::init_collection(database_collection) {
-                Ok(size) => {
-                    ret_size = size;
-                }
-                Err(e) => {
-                    eprintln!("Error while initializing a collection in the database");
-                    return Err(HandlerError::HandlerDatabaseError(e));
-                }
-            };
-            domain::database::add_tracks(playlist.tracks);
+            ret_size = add_playlist_data_to_database(playlist.clone())?;
+            add_tracks_to_collection(playlist);
         }
         Err(e) => {
             eprintln!("Error getting playlist {} : {:?}", playlist_id.clone(), e);
@@ -76,6 +62,57 @@ async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, Hand
         }
     }
     return Ok(ret_size);
+}
+
+fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, HandlerError> {
+    let ret_size: usize;
+    let database_collection = InitCollectionDatabase {
+        name: playlist.title,
+        url: playlist.url,
+        deezer_id: playlist.id.to_string(),
+    };
+    println!("Initializing collection");
+    match domain::database::init_collection(database_collection) {
+        Ok(size) => {
+            ret_size = size;
+        }
+        Err(e) => {
+            eprintln!("Error while initializing a collection in the database");
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    };
+    domain::database::add_tracks(playlist.tracks);
+    return Ok(ret_size);
+}
+
+fn add_tracks_to_collection(playlist: Playlist) {
+    match domain::database::get_collection_id_by_deezer_id(format!("{}", playlist.id)) {
+        Ok(col_id) => playlist.tracks.into_iter().for_each(|track| {
+            match domain::database::get_track_id_by_deezer_id(track.deezer_id.clone()) {
+                Ok(track_id) => match domain::database::add_track_to_collection(col_id, track_id) {
+                    Ok(_) => {}
+                    Err(e) => {
+                        eprintln!(
+                            "error adding track {track_id} to collection {col_id} : {:?}",
+                            e
+                        );
+                    }
+                },
+                Err(e) => {
+                    eprintln!(
+                        "error getting track id from deezer id {} : {:?}",
+                        track.deezer_id, e
+                    );
+                }
+            }
+        }),
+        Err(e) => {
+            eprintln!(
+                "Error getting collection id from deezer_id {} : {:?}",
+                playlist.id, e
+            );
+        }
+    }
 }
 
 fn get_playlist_id_from_url(url: String) -> u64 {

@@ -31,7 +31,7 @@ pub async fn create_playlist(name: String) -> Result<u64, Error> {
         format!("access_token={}", get_token())
     );
     let client = reqwest::Client::new();
-    let response: reqwest::Response = client.post(url).send().await?;
+    let response: reqwest::Response = client.post(url).header("content-length", 0).send().await?;
     match response.json::<CreatedPlaylist>().await {
         Ok(playlist) => Ok(playlist.id),
         Err(e) => {
