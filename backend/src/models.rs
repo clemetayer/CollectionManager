@@ -46,3 +46,11 @@ pub struct NewTrackInCollection<'a> {
     pub collection_id: &'a i32,
     pub track_id: &'a i32,
 }
+
+#[derive(Queryable, Selectable)]
+#[diesel(table_name = tracks_in_collection)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct TracksInCollection {
+    pub collection_id: i32,
+    pub track_id: i32,
+}

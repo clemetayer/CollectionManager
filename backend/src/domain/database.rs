@@ -10,6 +10,7 @@ use crate::domain::domain_models::CollectionDatabase;
 use crate::handlers;
 
 use super::domain_models::InitCollectionDatabase;
+use super::domain_models::TrackDatabase;
 use super::errors::DatabaseDomainError;
 
 pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, DatabaseDomainError> {
@@ -206,6 +207,83 @@ fn convert_collection_list_model_to_database(
 fn convert_collection_model_to_database(collection_model: Collection) -> CollectionDatabase {
     let collection_database = CollectionDatabase {
         name: collection_model.name,
+        deezer_id: collection_model.deezer_id,
+        url: collection_model.url,
+        tracks: Vec::new(),
     };
     return collection_database;
+}
+
+pub fn get_collection_with_tracks(
+    deezer_id: String,
+) -> Result<CollectionDatabase, DatabaseDomainError> {
+    println!(
+        "getting collection with tracks from deezer id : {}",
+        deezer_id.clone()
+    );
+    match &mut establish_connection() {
+        Ok(connection) => match collections::table
+            .filter(collections::deezer_id.eq(deezer_id.clone()))
+            .select(Collection::as_select())
+            .get_result(connection)
+        {
+            Ok(collection) => {
+                println!("getting tracks in collection");
+                match tracks_in_collection::table
+                    .filter(tracks_in_collection::collection_id.eq(collection.id.clone()))
+                    .select(TracksInCollection::as_select())
+                    .get_results(connection)
+                {
+                    Ok(tracks) => {
+                        let tracks_database: &mut Vec<TrackDatabase> = &mut Vec::new();
+                        println!("mapping tracks in collection");
+                        for track in tracks.iter() {
+                            match tracks::table
+                                .filter(tracks::id.eq(track.track_id.clone()))
+                                .select(Track::as_select())
+                                .get_result(connection)
+                            {
+                                Ok(track_database) => {
+                                    println!(
+                                        "adding track {} to map vec",
+                                        track_database.deezer_id.clone()
+                                    );
+                                    tracks_database.push(TrackDatabase {
+                                        deezer_id: track_database.deezer_id,
+                                        title: track_database.title,
+                                        artist: track_database.artist,
+                                        url: track_database.url,
+                                    });
+                                }
+                                Err(e) => {
+                                    eprintln!("Error getting track id {} : {e}", track.track_id);
+                                }
+                            }
+                        }
+                        return Ok(CollectionDatabase {
+                            deezer_id: collection.deezer_id,
+                            url: collection.url,
+                            name: collection.name,
+                            tracks: tracks_database.clone(),
+                        });
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "Error getting the tracks in collection {} : {e}",
+                            deezer_id.clone()
+                        );
+                        return Err(DatabaseDomainError::ResultError(e));
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("Error getting the collection {} : {e}", deezer_id);
+                return Err(DatabaseDomainError::ResultError(e));
+            }
+        },
+        Err(e) => {
+            eprintln!("Error trying connect to the database : {e}");
+            return Err(DatabaseDomainError::ConnectionError());
+        }
+    }
 }

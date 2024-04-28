@@ -1,7 +1,9 @@
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
-    collection_management::{self, get_playlist, init_collections, list_collections},
+    collection_management::{
+        self, get_collection_with_tracks, get_playlist, init_collections, list_collections,
+    },
     handlers_models::InitCollection,
 };
 
@@ -21,7 +23,9 @@ fn get_cors_config() -> Builder {
 }
 
 pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    init_collection().or(get_collection_list())
+    init_collection()
+        .or(get_collection_list())
+        .or(get_collection_by_deezer_id())
 }
 
 // `POST /collection/init`
@@ -71,6 +75,28 @@ async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
         }
         Err(_) => {
             eprintln!("Error while fetching the collection list");
+            Err(warp::reject())
+        }
+    }
+}
+
+// GET /collection/<collection_deezer_id>
+pub fn get_collection_by_deezer_id() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
+{
+    warp::path!("collection" / String)
+        .and(warp::get())
+        .and_then(call_get_collection_by_deezer_id)
+}
+
+async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Reply, Rejection> {
+    println!("getting collection by deezer id {}", deezer_id.clone());
+    match get_collection_with_tracks(deezer_id.clone()) {
+        Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
+        Err(e) => {
+            eprintln!(
+                "Error while getting the collection by deezer id {} : {:?}",
+                deezer_id, e
+            );
             Err(warp::reject())
         }
     }

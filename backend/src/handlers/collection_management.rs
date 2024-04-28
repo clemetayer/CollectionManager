@@ -1,6 +1,7 @@
 use deezer::models::{DeezerArray, PlaylistTrack};
 
-use super::handlers_models::{self, CollectionListElement, Playlist, Track};
+use super::handlers_models::{self, Collection, CollectionListElement, Playlist, Track};
+use crate::domain::database;
 use crate::domain::deezer::create_playlist;
 use crate::domain::{self, domain_models::InitCollectionDatabase};
 use crate::handlers::errors::*;
@@ -146,6 +147,8 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
                 .map(|collection| {
                     let collection_element = CollectionListElement {
                         name: collection.name,
+                        deezer_id: collection.deezer_id,
+                        url: collection.url,
                     };
                     return collection_element;
                 })
@@ -194,4 +197,40 @@ fn convert_track(track: PlaylistTrack) -> Track {
         artist: track.artist.name,
         deezer_id: format!("{}", get_track_id_from_url(track.link)),
     };
+}
+
+pub fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, HandlerError> {
+    println!(
+        "getting collection with tracks from deezer id {}",
+        deezer_id.clone()
+    );
+    match database::get_collection_with_tracks(deezer_id.clone()) {
+        Ok(collection) => {
+            println!("collection = {:?}", collection);
+            let tracks: Vec<Track> = collection
+                .tracks
+                .into_iter()
+                .map(|track| Track {
+                    id: 0, // unused
+                    deezer_id: track.deezer_id,
+                    title: track.title,
+                    link: track.url,
+                    artist: track.artist,
+                })
+                .collect::<Vec<_>>();
+            return Ok(Collection {
+                name: collection.name,
+                deezer_id: collection.deezer_id,
+                url: collection.url,
+                tracks: tracks,
+            });
+        }
+        Err(e) => {
+            eprintln!(
+                "Error while getting the collection with tracks that has deezer id {} : {:?}",
+                deezer_id, e
+            );
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    }
 }

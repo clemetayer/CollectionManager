@@ -9,6 +9,8 @@ pub struct InitCollection {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CollectionListElement {
     pub name: String,
+    pub deezer_id: String,
+    pub url: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -28,4 +30,12 @@ pub struct Track {
     pub title: String,
     pub link: String,
     pub artist: String,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Collection {
+    pub name: String,
+    pub deezer_id: String,
+    pub url: String,
+    pub tracks: Vec<Track>,
 }
