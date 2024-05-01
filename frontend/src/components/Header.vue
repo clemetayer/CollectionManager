@@ -1,7 +1,5 @@
 <template>
     <header>
-        <center>
-            <h1>Collection Manager</h1>
-        </center>
+        <h1 style="text-align:center">Collection Manager</h1>
     </header>
 </template>

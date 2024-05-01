@@ -86,6 +86,7 @@ pub fn get_collection_by_deezer_id() -> impl Filter<Extract = impl Reply, Error 
     warp::path!("collection" / String)
         .and(warp::get())
         .and_then(call_get_collection_by_deezer_id)
+        .with(&get_cors_config())
 }
 
 async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Reply, Rejection> {

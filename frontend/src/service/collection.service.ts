@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { ConstantsAPI } from './constantsAPI';
+import type { Collection } from '@/models/collection.model';
 
 export class CollectionService {
 
@@ -33,5 +34,22 @@ export class CollectionService {
             .catch(error => {
                 console.error('error init collection :', error);
             })
+    }
+
+    async getCollection(deezer_id: string) : Promise<Collection> {
+        return this.axiosInstance.get<Collection>(ConstantsAPI.PATH_COLLECTION + deezer_id)
+        .then((response) => {
+            console.log("response getting collection : " + response);
+            return response.data;
+        })
+        .catch(error => {
+            console.error('error getting collection :', error);
+            return { // Default return to not crash the entire page
+                name: "",
+                deezer_id: deezer_id,
+                url: "",
+                tracks : []
+            }
+        })
     }
 }
