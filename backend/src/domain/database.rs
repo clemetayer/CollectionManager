@@ -1,4 +1,5 @@
 use backend::models::*;
+use backend::schema::collection_dependencies;
 use backend::schema::collections;
 use backend::schema::tracks;
 use backend::schema::tracks_in_collection;
@@ -281,6 +282,39 @@ pub fn get_collection_with_tracks(
                 return Err(DatabaseDomainError::ResultError(e));
             }
         },
+        Err(e) => {
+            eprintln!("Error trying connect to the database : {e}");
+            return Err(DatabaseDomainError::ConnectionError());
+        }
+    }
+}
+
+pub fn add_collection_to_parent(
+    parent_id: i32,
+    child_id: i32,
+) -> Result<bool, DatabaseDomainError> {
+    match &mut establish_connection() {
+        Ok(connection) => {
+            let collection_dependency = NewCollectionDependency {
+                parent_id: &parent_id,
+                child_id: &child_id,
+            };
+            match diesel::insert_into(collection_dependencies::table)
+                .values(&collection_dependency)
+                .on_conflict_do_nothing()
+                .execute(connection)
+            {
+                Ok(_) => {
+                    return Ok(true);
+                }
+                Err(e) => {
+                    eprintln!(
+                        "Error adding collection dependency : child id {child_id} to parent id {parent_id}: {e}"
+                    );
+                    return Err(DatabaseDomainError::ConnectionError());
+                }
+            }
+        }
         Err(e) => {
             eprintln!("Error trying connect to the database : {e}");
             return Err(DatabaseDomainError::ConnectionError());

@@ -1,5 +1,5 @@
 use super::schema::collections;
-use crate::schema::{tracks, tracks_in_collection};
+use crate::schema::{collection_dependencies, tracks, tracks_in_collection};
 use diesel::prelude::*;
 
 #[derive(Insertable)]
@@ -53,4 +53,11 @@ pub struct NewTrackInCollection<'a> {
 pub struct TracksInCollection {
     pub collection_id: i32,
     pub track_id: i32,
+}
+
+#[derive(Insertable)]
+#[diesel(table_name = collection_dependencies)]
+pub struct NewCollectionDependency<'a> {
+    pub parent_id: &'a i32,
+    pub child_id: &'a i32,
 }

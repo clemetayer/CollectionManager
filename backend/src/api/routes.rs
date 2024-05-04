@@ -1,13 +1,14 @@
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
+    collection_dependencies::add_collection_dependency,
     collection_management::{
         self, get_collection_with_tracks, get_playlist, init_collections, list_collections,
     },
     handlers_models::InitCollection,
 };
 
-use super::api_models::InitCollectionInput;
+use super::api_models::{AddCollectionToParent, InitCollectionInput};
 
 fn get_cors_config() -> Builder {
     return warp::cors()
@@ -26,6 +27,7 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
     init_collection()
         .or(get_collection_list())
         .or(get_collection_by_deezer_id())
+        .or(add_collection_to_parent())
 }
 
 // `POST /collection/init`
@@ -100,6 +102,37 @@ async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Repl
             );
             Err(warp::reject())
         }
+    }
+}
+
+// POST /collection-management/add-collection
+pub fn add_collection_to_parent() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection-management" / "add-collection")
+        .and(warp::post())
+        .and(warp::body::json()) //JSON body
+        .and(warp::body::content_length_limit(1024 * 16)) // Avoids huge payloads
+        .and_then(call_add_collection_to_parent)
+        .with(&get_cors_config())
+}
+
+async fn call_add_collection_to_parent(
+    add_collection_to_parent_input: AddCollectionToParent,
+) -> Result<impl Reply, Rejection> {
+    match add_collection_dependency(
+        add_collection_to_parent_input.parent_collection_id,
+        add_collection_to_parent_input.child_collection_id,
+    )
+    .await
+    {
+        Ok(_) => {
+            let reply = warp::reply();
+            Ok(warp::reply::with_header(
+                reply,
+                "Access-Control-Allow-Origin",
+                "*",
+            ))
+        }
+        Err(_) => Err(warp::reject()),
     }
 }
 
