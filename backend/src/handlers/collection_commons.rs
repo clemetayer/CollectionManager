@@ -39,7 +39,6 @@ pub async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, 
     match get_playlist(playlist_id).await {
         Ok(playlist) => {
             ret_size = add_playlist_data_to_database(playlist.clone())?;
-            add_tracks_to_collection(playlist);
         }
         Err(e) => {
             eprintln!("Error getting playlist {} : {:?}", playlist_id.clone(), e);
@@ -66,38 +65,7 @@ fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, HandlerErr
             return Err(HandlerError::HandlerDatabaseError(e));
         }
     };
-    domain::database::add_tracks(playlist.tracks);
     return Ok(ret_size);
-}
-
-fn add_tracks_to_collection(playlist: Playlist) {
-    match domain::database::get_collection_id_by_deezer_id(format!("{}", playlist.id)) {
-        Ok(col_id) => playlist.tracks.into_iter().for_each(|track| {
-            match domain::database::get_track_id_by_deezer_id(track.deezer_id.clone()) {
-                Ok(track_id) => match domain::database::add_track_to_collection(col_id, track_id) {
-                    Ok(_) => {}
-                    Err(e) => {
-                        eprintln!(
-                            "error adding track {track_id} to collection {col_id} : {:?}",
-                            e
-                        );
-                    }
-                },
-                Err(e) => {
-                    eprintln!(
-                        "error getting track id from deezer id {} : {:?}",
-                        track.deezer_id, e
-                    );
-                }
-            }
-        }),
-        Err(e) => {
-            eprintln!(
-                "Error getting collection id from deezer_id {} : {:?}",
-                playlist.id, e
-            );
-        }
-    }
 }
 
 pub async fn get_playlist(playlist_id: u64) -> Result<Playlist, HandlerError> {
@@ -146,7 +114,7 @@ pub fn convert_string_to_u64(id: &&str) -> u64 {
     match id.parse::<u64>() {
         Ok(id) => return id,
         Err(e) => {
-            println!("Error while converting id {} to u64", id);
+            println!("Error while converting id {} to u64 : {:?}", id, e);
             return 0;
         }
     }
@@ -157,7 +125,7 @@ pub fn get_track_id_from_url(url: String) -> u64 {
     match id_str.last().unwrap().parse::<u64>() {
         Ok(id) => return id,
         Err(e) => {
-            println!("Error while parsing url {}", url);
+            println!("Error while parsing url {} : {:?}", url, e);
             return 0;
         }
     }

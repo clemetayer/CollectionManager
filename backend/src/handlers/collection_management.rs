@@ -1,9 +1,10 @@
 use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_playlist_id_from_url,
 };
-use super::handlers_models::{self, Collection, CollectionListElement, Track};
+use super::handlers_models::{self, Collection, CollectionListElement};
 use crate::domain;
 use crate::domain::database;
+use crate::handlers::collection_commons::{convert_string_to_u64, get_playlist};
 use crate::handlers::errors::*;
 
 pub async fn init_collections(
@@ -44,7 +45,7 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
     }
 }
 
-pub fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, HandlerError> {
+pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, HandlerError> {
     println!(
         "getting collection with tracks from deezer id {}",
         deezer_id.clone()
@@ -52,22 +53,12 @@ pub fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, Handl
     match database::get_collection_with_tracks(deezer_id.clone()) {
         Ok(collection) => {
             println!("collection = {:?}", collection);
-            let tracks: Vec<Track> = collection
-                .tracks
-                .into_iter()
-                .map(|track| Track {
-                    id: 0, // unused
-                    deezer_id: track.deezer_id,
-                    title: track.title,
-                    link: track.url,
-                    artist: track.artist,
-                })
-                .collect::<Vec<_>>();
+            let playlist = get_playlist(convert_string_to_u64(&deezer_id.clone().as_str())).await?;
             return Ok(Collection {
                 name: collection.name,
                 deezer_id: collection.deezer_id,
                 url: collection.url,
-                tracks: tracks,
+                tracks: playlist.tracks,
             });
         }
         Err(e) => {

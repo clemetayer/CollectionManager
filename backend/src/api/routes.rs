@@ -91,7 +91,7 @@ pub fn get_collection_by_deezer_id() -> impl Filter<Extract = impl Reply, Error 
 
 async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Reply, Rejection> {
     println!("getting collection by deezer id {}", deezer_id.clone());
-    match get_collection_with_tracks(deezer_id.clone()) {
+    match get_collection_with_tracks(deezer_id.clone()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
         Err(e) => {
             eprintln!(

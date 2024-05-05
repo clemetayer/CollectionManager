@@ -12,7 +12,6 @@ pub struct CollectionDatabase {
     pub deezer_id: String,
     pub url: String,
     pub name: String,
-    pub tracks: Vec<TrackDatabase>,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
