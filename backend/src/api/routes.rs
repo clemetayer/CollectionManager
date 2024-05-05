@@ -2,9 +2,7 @@ use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
     collection_dependencies::add_collection_dependency,
-    collection_management::{
-        self, get_collection_with_tracks, get_playlist, init_collections, list_collections,
-    },
+    collection_management::{get_collection_with_tracks, init_collections, list_collections},
     handlers_models::InitCollection,
 };
 
