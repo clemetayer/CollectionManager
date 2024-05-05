@@ -17,30 +17,7 @@ diesel::table! {
     }
 }
 
-diesel::table! {
-    tracks (id) {
-        id -> Integer,
-        deezer_id -> Text,
-        title -> Text,
-        url -> Text,
-        artist -> Text,
-    }
-}
-
-diesel::table! {
-    tracks_in_collection (id) {
-        id -> Integer,
-        track_id -> Integer,
-        collection_id -> Integer,
-    }
-}
-
-diesel::joinable!(tracks_in_collection -> collections (collection_id));
-diesel::joinable!(tracks_in_collection -> tracks (track_id));
-
 diesel::allow_tables_to_appear_in_same_query!(
     collection_dependencies,
     collections,
-    tracks,
-    tracks_in_collection,
 );
