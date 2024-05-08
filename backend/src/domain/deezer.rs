@@ -94,7 +94,7 @@ pub async fn add_tracks_to_playlist(
         )
     );
     let client = reqwest::Client::new();
-    let response = client.post(url).send().await?;
+    let response = client.post(url).header("content-length", 0).send().await?;
     match response.json::<bool>().await {
         Ok(value) => Ok(value),
         Err(e) => {

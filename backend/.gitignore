@@ -17,3 +17,4 @@ Cargo.lock
 *.db
 *.sqlite3
 *.env
+tmp/

@@ -26,3 +26,11 @@ pub struct NewCollectionDependency<'a> {
     pub parent_id: &'a i32,
     pub child_id: &'a i32,
 }
+
+#[derive(Queryable, Selectable)]
+#[diesel(table_name = collection_dependencies)]
+#[diesel(check_for_backend(diesel::sqlite::Sqlite))]
+pub struct CollectionDependencies {
+    pub parent_id: i32,
+    pub child_id: i32,
+}

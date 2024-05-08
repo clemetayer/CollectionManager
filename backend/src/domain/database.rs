@@ -177,3 +177,39 @@ pub fn add_collection_to_parent(
         }
     }
 }
+
+pub fn get_child_collections(
+    parent_id: i32,
+) -> Result<Vec<CollectionDatabase>, DatabaseDomainError> {
+    match &mut establish_connection() {
+        Ok(connection) => {
+            match collection_dependencies::table
+                .inner_join(
+                    collections::table.on(collections::id.eq(collection_dependencies::child_id)),
+                )
+                .filter(collection_dependencies::parent_id.eq(parent_id))
+                .select(Collection::as_select())
+                .get_results(connection)
+            {
+                Ok(collections) => {
+                    return Ok(collections
+                        .into_iter()
+                        .map(|collection| CollectionDatabase {
+                            deezer_id: collection.deezer_id,
+                            url: collection.url,
+                            name: collection.name,
+                        })
+                        .collect::<Vec<_>>());
+                }
+                Err(e) => {
+                    eprintln!("Error getting child collections : {e}");
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            }
+        }
+        Err(e) => {
+            eprintln!("Error trying connect to the database : {e}");
+            return Err(DatabaseDomainError::ConnectionError());
+        }
+    }
+}
