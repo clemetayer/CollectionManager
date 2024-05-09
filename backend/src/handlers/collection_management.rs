@@ -61,6 +61,7 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
                 deezer_id: collection.deezer_id,
                 url: collection.url,
                 tracks: playlist.tracks,
+                children_col: get_direct_children_collections_without_tracks(deezer_id),
             });
         }
         Err(e) => {
@@ -71,6 +72,42 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
             return Err(HandlerError::HandlerDatabaseError(e));
         }
     }
+}
+
+// will return the basic children collections (no tracks or other children collections)
+fn get_direct_children_collections_without_tracks(deezer_id: String) -> Vec<Collection> {
+    let mut parent_id: i32 = -1;
+    let mut children_collections: Vec<Collection> = Vec::new();
+    match get_collection_id_by_deezer_id(deezer_id.clone()) {
+        Ok(id) => parent_id = id,
+        Err(e) => {
+            eprintln!(
+                "Error while getting collection id from deezer_id {} : {:?}",
+                deezer_id, e
+            );
+        }
+    }
+    match get_child_collections(parent_id) {
+        Ok(collections) => {
+            children_collections = collections
+                .into_iter()
+                .map(|collection| Collection {
+                    name: collection.name,
+                    deezer_id: collection.deezer_id,
+                    url: collection.url,
+                    tracks: Vec::new(),
+                    children_col: Vec::new(),
+                })
+                .collect::<Vec<_>>();
+        }
+        Err(e) => {
+            eprintln!(
+                "Error while getting child collections of {} : {:?}",
+                parent_id, e
+            );
+        }
+    }
+    return children_collections;
 }
 
 pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, HandlerError> {
