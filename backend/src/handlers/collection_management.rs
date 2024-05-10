@@ -1,3 +1,7 @@
+use std::env;
+
+use dotenvy::dotenv;
+
 use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_playlist_id_from_url,
 };
@@ -182,4 +186,74 @@ pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, H
             return Err(HandlerError::HandlerDatabaseError(e));
         }
     }
+}
+
+pub async fn update_all_collections() -> Result<bool, HandlerError> {
+    let mut playlists_ids_to_update: Vec<String> = Vec::new();
+    let mut next_children_ids: Vec<String> = list_collections()?
+        .into_iter()
+        .map(|collection| collection.deezer_id)
+        .collect::<Vec<_>>();
+    for _depth in 0..get_max_depth() {
+        let mut children_ids: Vec<String> = Vec::new();
+        for child_id in next_children_ids.into_iter() {
+            // Update the playlists ids
+            if playlists_ids_to_update.contains(&child_id) {
+                playlists_ids_to_update.retain(|id| *id != child_id);
+            }
+            playlists_ids_to_update.insert(0, child_id.clone());
+            // Add the next children ids
+            let mut parent_id: i32 = -1;
+            match get_collection_id_by_deezer_id(child_id.clone()) {
+                Ok(id) => parent_id = id,
+                Err(e) => {
+                    eprintln!(
+                        "Error getting collection id by deezer id {} : {:?}",
+                        child_id, e
+                    );
+                }
+            }
+            match get_child_collections(parent_id) {
+                Ok(child_collections) => {
+                    for child_collection in child_collections.into_iter() {
+                        if !children_ids.contains(&child_collection.deezer_id) {
+                            children_ids.push(child_collection.deezer_id);
+                        }
+                    }
+                }
+                Err(e) => {
+                    eprintln!(
+                        "Error getting child collections of collection {} : {:?}",
+                        child_id, e
+                    );
+                }
+            }
+        }
+        // Continue or exit loop
+        if children_ids.len() > 0 {
+            next_children_ids = children_ids;
+        } else {
+            break;
+        }
+    }
+    // Update collections
+    println!("Collections to update : {:?}", playlists_ids_to_update);
+    for id in playlists_ids_to_update.into_iter() {
+        match refresh_collection_handler(id.clone()).await {
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("Error while refreshing collection {} : {:?}", id, e);
+            }
+        }
+    }
+    return Ok(true);
+}
+
+fn get_max_depth() -> u64 {
+    dotenv().ok();
+    return convert_string_to_u64(
+        &env::var("MAX_COLLECTION_DEPTH")
+            .expect("MAX_COLLECTION_DEPTH must be set")
+            .as_str(),
+    );
 }

@@ -77,41 +77,44 @@ pub async fn add_tracks_to_playlist(
     playlist_id: String,
     track_ids: Vec<String>,
 ) -> Result<bool, Error> {
-    let mut track_ids_query_params: String = "".to_owned();
-    for track_id in track_ids.into_iter() {
-        track_ids_query_params.push_str(&format!("{},", track_id));
-    }
-    let url: String = format!(
-        "{}/{}/{}/{}?{}",
-        PATH_DEEZER_API,
-        PATH_PLAYLIST,
-        playlist_id.clone(),
-        PATH_TRACKS,
-        format!(
-            "access_token={}&songs={}",
-            get_token(),
-            track_ids_query_params
-        )
-    );
-    let client = reqwest::Client::new();
-    let response = client.post(url).header("content-length", 0).send().await?;
-    match response.json::<bool>().await {
-        Ok(value) => Ok(value),
-        Err(e) => {
-            eprintln!(
-                "Error querying {}/{}/{}/{}?{} : {}",
-                PATH_DEEZER_API,
-                PATH_PLAYLIST,
-                playlist_id.clone(),
-                PATH_TRACKS,
-                format!(
-                    "access_token={}&songs={}",
-                    get_token(),
-                    track_ids_query_params
-                ),
-                e
-            );
-            Err(e)
+    if track_ids.len() > 0 {
+        let mut track_ids_query_params: String = "".to_owned();
+        for track_id in track_ids.into_iter() {
+            track_ids_query_params.push_str(&format!("{},", track_id));
+        }
+        let url: String = format!(
+            "{}/{}/{}/{}?{}",
+            PATH_DEEZER_API,
+            PATH_PLAYLIST,
+            playlist_id.clone(),
+            PATH_TRACKS,
+            format!(
+                "access_token={}&songs={}",
+                get_token(),
+                track_ids_query_params
+            )
+        );
+        let client = reqwest::Client::new();
+        let response = client.post(url).header("content-length", 0).send().await?;
+        match response.json::<bool>().await {
+            Ok(value) => return Ok(value),
+            Err(e) => {
+                eprintln!(
+                    "Error querying {}/{}/{}/{}?{} : {}",
+                    PATH_DEEZER_API,
+                    PATH_PLAYLIST,
+                    playlist_id.clone(),
+                    PATH_TRACKS,
+                    format!(
+                        "access_token={}&songs={}",
+                        get_token(),
+                        track_ids_query_params
+                    ),
+                    e
+                );
+                return Err(e);
+            }
         }
     }
+    return Ok(false);
 }

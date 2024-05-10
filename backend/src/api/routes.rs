@@ -4,6 +4,7 @@ use crate::handlers::{
     collection_dependencies::add_collection_dependency,
     collection_management::{
         get_collection_with_tracks, init_collections, list_collections, refresh_collection_handler,
+        update_all_collections,
     },
     handlers_models::InitCollection,
 };
@@ -29,6 +30,7 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         .or(get_collection_by_deezer_id())
         .or(add_collection_to_parent())
         .or(refresh_collection())
+        .or(refresh_all_collections())
 }
 
 // `POST /collection/init`
@@ -147,6 +149,28 @@ pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejecti
 
 async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Rejection> {
     match refresh_collection_handler(collection_id).await {
+        Ok(_) => {
+            let reply = warp::reply();
+            Ok(warp::reply::with_header(
+                reply,
+                "Access-Control-Allow-Origin",
+                "*",
+            ))
+        }
+        Err(_) => Err(warp::reject()),
+    }
+}
+
+// PUT /collection-management/refresh-collection/all
+pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection-management" / "refresh-all-collections")
+        .and(warp::put())
+        .and_then(call_refresh_all_collections)
+        .with(&get_cors_config())
+}
+
+async fn call_refresh_all_collections() -> Result<impl Reply, Rejection> {
+    match update_all_collections().await {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
