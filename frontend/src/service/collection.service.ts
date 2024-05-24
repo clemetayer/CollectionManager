@@ -52,4 +52,30 @@ export class CollectionService {
             }
         })
     }
+
+    async updateCollection(deezer_id : string) {
+        return this.axiosInstance.put(ConstantsAPI.PATH_REFRESH_COLLECTION + deezer_id, undefined,
+        {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch(error => {
+            console.error('error update collection :', error);
+        })
+    }
+
+    async updateAllCollections() {
+        return this.axiosInstance.put(ConstantsAPI.PATH_REFRESH_ALL_COLLECTIONS, undefined,
+        {
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            }
+        })
+        .catch(error => {
+            console.error('error update all collections :', error);
+        })
+    }
 }

@@ -19,6 +19,9 @@
                 collectionService.getCollection(collectionId).then(collectionRes => {
                     this.collection = collectionRes;
                 });
+            },
+            updateCollection() : void {
+                collectionService.updateCollection(this.collection.deezer_id);
             }
         }
     });
@@ -27,6 +30,7 @@
 <template>
     <div>
         <h2><a v-bind:href="collection.url">{{ collection.name }}</a></h2>
+        <ui-button @click="updateCollection">Update collection</ui-button>
         <ui-grid>
             <ui-grid-cell></ui-grid-cell>
             <ui-grid-cell>

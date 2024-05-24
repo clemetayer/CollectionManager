@@ -53,6 +53,9 @@ import { type Collection } from "../models/collection.model"
             onConfirm() {
                 console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
                 collectionService.initCollection(this.collectionName, this.fromPlaylist);
+            },
+            updateAllCollections() {
+                collectionService.updateAllCollections();
             }
         },
         mounted() {
@@ -68,6 +71,8 @@ import { type Collection } from "../models/collection.model"
                 <ui-select v-model="selectedOption" :options="options" @selected="onSelectCollection($event)"></ui-select>
                 <ui-icon-button icon="add" @click="addCollection()"></ui-icon-button>
             </v-container>
+            <br/>
+            <ui-button @click="updateAllCollections">Update all collections</ui-button>
             <CollectionData ref="collectionDataRef"/>
         </div>
         <ui-dialog v-model="open" @confirm="onConfirm">

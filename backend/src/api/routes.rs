@@ -21,7 +21,7 @@ fn get_cors_config() -> Builder {
             "X-Requested-With",
             "Content-Type",
         ])
-        .allow_methods(vec!["GET", "POST"]);
+        .allow_methods(vec!["GET", "POST", "PUT"]);
 }
 
 pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -161,7 +161,7 @@ async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Re
     }
 }
 
-// PUT /collection-management/refresh-collection/all
+// PUT /collection-management/refresh-all-collections
 pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "refresh-all-collections")
         .and(warp::put())
