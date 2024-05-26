@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ConstantsAPI } from './constantsAPI';
-import type { Collection } from '@/models/collection.model';
+import type { Collection, PostAddCollectionToParent } from '@/models/collection.model';
 
 export class CollectionService {
 
@@ -77,5 +77,22 @@ export class CollectionService {
         .catch(error => {
             console.error('error update all collections :', error);
         })
+    }
+
+    async addChildCollection(parent_id : string, child_id : string) {
+        const body : PostAddCollectionToParent = {
+            parent_collection_id: parent_id,
+            child_collection_id: child_id
+        };
+        return this.axiosInstance.post(ConstantsAPI.PATH_ADD_COLLECTION_TO_PARENT, body,
+            {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .catch(error => {
+                console.error('error update all collections :', error);
+            })
     }
 }

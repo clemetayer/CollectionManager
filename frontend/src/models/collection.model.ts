@@ -12,3 +12,8 @@ export type Track = {
     link: string,
     artist: string,
 }
+
+export type PostAddCollectionToParent = {
+    parent_collection_id : string,
+    child_collection_id : string
+}

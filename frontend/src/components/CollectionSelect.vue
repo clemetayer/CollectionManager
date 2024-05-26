@@ -3,12 +3,8 @@ import { defineComponent } from 'vue';
 import { CollectionService } from '../service/collection.service';
 import CollectionData from './CollectionData.vue';
 import { type Collection } from "../models/collection.model"
+import { type SelectOption } from "../models/balmui.model"
 
-    type SelectOption = {
-        label : string,
-        value : string
-        disabled ?: boolean
-    }
     let collectionService = new CollectionService();
 
     export default defineComponent({
@@ -45,14 +41,17 @@ import { type Collection } from "../models/collection.model"
             onSelectCollection(pSelectedOption : any) {
                 this.selectedOption = pSelectedOption.value;
                 this.$refs.collectionDataRef.displayCollection(pSelectedOption.value);
+                this.$refs.collectionDataRef.collections = this.options;
                 console.log(this.selectedOption);
             },
             addCollection() {
                 this.open = true;
             },
-            onConfirm() {
-                console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
-                collectionService.initCollection(this.collectionName, this.fromPlaylist);
+            onConfirm(result : any) {
+                if(result){
+                    console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
+                    collectionService.initCollection(this.collectionName, this.fromPlaylist);
+                }
             },
             updateAllCollections() {
                 collectionService.updateAllCollections();
