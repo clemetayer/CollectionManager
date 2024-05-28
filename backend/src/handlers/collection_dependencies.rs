@@ -1,6 +1,8 @@
 use crate::{
     domain::{
-        database::{add_collection_to_parent, get_collection_id_by_deezer_id},
+        database::{
+            add_collection_to_parent, get_collection_id_by_deezer_id, remove_collection_to_parent,
+        },
         errors::DatabaseDomainError,
     },
     handlers::errors::HandlerError,
@@ -91,5 +93,49 @@ async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, Ha
                 return Err(HandlerError::HandlerDatabaseError(e));
             }
         },
+    }
+}
+
+pub fn remove_collection_dependency(
+    parent_deezer_id: String,
+    child_deezer_id: String,
+) -> Result<bool, HandlerError> {
+    let parent_id: i32;
+    let child_id: i32;
+    println!(
+        "Removing collection depenency {} -> {}",
+        parent_deezer_id.clone(),
+        child_deezer_id.clone()
+    );
+    match get_collection_id_by_deezer_id(parent_deezer_id.clone()) {
+        Ok(id) => {
+            parent_id = id;
+        }
+        Err(e) => {
+            eprintln!(
+                "Error while getting collection id {} : {:?}",
+                parent_deezer_id, e
+            );
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    };
+    match get_collection_id_by_deezer_id(child_deezer_id.clone()) {
+        Ok(id) => {
+            child_id = id;
+        }
+        Err(e) => {
+            eprintln!(
+                "Error while getting collection id {} : {:?}",
+                child_deezer_id, e
+            );
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    };
+    match remove_collection_to_parent(parent_id, child_id) {
+        Ok(value) => return Ok(true),
+        Err(e) => {
+            eprintln!("Error while removing collection dependency : {:?}", e);
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
     }
 }

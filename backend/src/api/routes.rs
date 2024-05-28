@@ -1,7 +1,7 @@
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
-    collection_dependencies::add_collection_dependency,
+    collection_dependencies::{add_collection_dependency, remove_collection_dependency},
     collection_management::{
         get_collection_with_tracks, init_collections, list_collections, refresh_collection_handler,
         update_all_collections,
@@ -9,7 +9,7 @@ use crate::handlers::{
     handlers_models::InitCollection,
 };
 
-use super::api_models::{AddCollectionToParent, InitCollectionInput};
+use super::api_models::{AddCollectionToParent, InitCollectionInput, RemoveCollectionToParent};
 
 fn get_cors_config() -> Builder {
     return warp::cors()
@@ -21,7 +21,7 @@ fn get_cors_config() -> Builder {
             "X-Requested-With",
             "Content-Type",
         ])
-        .allow_methods(vec!["GET", "POST", "PUT"]);
+        .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
 }
 
 pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
@@ -31,6 +31,7 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         .or(add_collection_to_parent())
         .or(refresh_collection())
         .or(refresh_all_collections())
+        .or(remove_collection_from_parent())
 }
 
 // `POST /collection/init`
@@ -171,6 +172,36 @@ pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Re
 
 async fn call_refresh_all_collections() -> Result<impl Reply, Rejection> {
     match update_all_collections().await {
+        Ok(_) => {
+            let reply = warp::reply();
+            Ok(warp::reply::with_header(
+                reply,
+                "Access-Control-Allow-Origin",
+                "*",
+            ))
+        }
+        Err(_) => Err(warp::reject()),
+    }
+}
+
+// DELETE /collection-management/remove-collection
+pub fn remove_collection_from_parent(
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection-management" / "remove-collection")
+        .and(warp::delete())
+        .and(warp::body::json()) //JSON body
+        .and(warp::body::content_length_limit(1024 * 16)) // Avoids huge payloads
+        .and_then(call_remove_collection_to_parent)
+        .with(&get_cors_config())
+}
+
+async fn call_remove_collection_to_parent(
+    remove_collection_to_parent_input: RemoveCollectionToParent,
+) -> Result<impl Reply, Rejection> {
+    match remove_collection_dependency(
+        remove_collection_to_parent_input.parent_collection_id,
+        remove_collection_to_parent_input.child_collection_id,
+    ) {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
