@@ -7,7 +7,9 @@ use super::collection_commons::{
 };
 use super::handlers_models::{self, Collection, CollectionListElement};
 use crate::domain;
-use crate::domain::database::{self, get_child_collections, get_collection_id_by_deezer_id};
+use crate::domain::database::{
+    self, get_child_collections, get_collection_id_by_deezer_id, remove_collection_in_database,
+};
 use crate::domain::deezer::add_tracks_to_playlist;
 use crate::handlers::collection_commons::{convert_string_to_u64, get_playlist};
 use crate::handlers::errors::*;
@@ -256,4 +258,29 @@ fn get_max_depth() -> u64 {
             .expect("MAX_COLLECTION_DEPTH must be set")
             .as_str(),
     );
+}
+
+pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError> {
+    let mut collection_id: i32 = -1;
+    println!("Removing collection {}", deezer_id.clone());
+    match get_collection_id_by_deezer_id(deezer_id.clone()) {
+        Ok(id) => collection_id = id,
+        Err(e) => {
+            eprintln!(
+                "Error while getting collection id from deezer_id {} : {:?}",
+                collection_id, e
+            );
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    };
+    match remove_collection_in_database(collection_id) {
+        Ok(res) => return Ok(res),
+        Err(e) => {
+            eprintln!(
+                "Error while removing collection {} in database : {:?}",
+                deezer_id, e
+            );
+            return Err(HandlerError::HandlerDatabaseError(e));
+        }
+    }
 }

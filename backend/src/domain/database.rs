@@ -240,3 +240,49 @@ pub fn remove_collection_to_parent(
         }
     }
 }
+
+pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, DatabaseDomainError> {
+    match &mut establish_connection() {
+        Ok(connection) => {
+            let mut res = true;
+            match diesel::delete(
+                collection_dependencies::table
+                    .filter(collection_dependencies::parent_id.eq(collection_id)),
+            )
+            .execute(connection)
+            {
+                Ok(_) => res &= true,
+                Err(e) => {
+                    eprintln!("Error deleting collection dependencies : {e}");
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            };
+            match diesel::delete(
+                collection_dependencies::table
+                    .filter(collection_dependencies::child_id.eq(collection_id)),
+            )
+            .execute(connection)
+            {
+                Ok(_) => res &= true,
+                Err(e) => {
+                    eprintln!("Error deleting collection dependencies : {e}");
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            };
+            match diesel::delete(collections::table.filter(collections::id.eq(collection_id)))
+                .execute(connection)
+            {
+                Ok(_) => res &= true,
+                Err(e) => {
+                    eprintln!("Error deleting collection : {e}");
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            };
+            return Ok(res);
+        }
+        Err(e) => {
+            eprintln!("Error trying connect to the database : {e}");
+            return Err(DatabaseDomainError::ConnectionError());
+        }
+    }
+}

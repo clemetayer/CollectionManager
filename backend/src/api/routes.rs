@@ -4,7 +4,7 @@ use crate::handlers::{
     collection_dependencies::{add_collection_dependency, remove_collection_dependency},
     collection_management::{
         get_collection_with_tracks, init_collections, list_collections, refresh_collection_handler,
-        update_all_collections,
+        remove_collection_handler, update_all_collections,
     },
     handlers_models::InitCollection,
 };
@@ -32,6 +32,7 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         .or(refresh_collection())
         .or(refresh_all_collections())
         .or(remove_collection_from_parent())
+        .or(remove_collection())
 }
 
 // `POST /collection/init`
@@ -202,6 +203,28 @@ async fn call_remove_collection_to_parent(
         remove_collection_to_parent_input.parent_collection_id,
         remove_collection_to_parent_input.child_collection_id,
     ) {
+        Ok(_) => {
+            let reply = warp::reply();
+            Ok(warp::reply::with_header(
+                reply,
+                "Access-Control-Allow-Origin",
+                "*",
+            ))
+        }
+        Err(_) => Err(warp::reject()),
+    }
+}
+
+// DELETE /collection/<collection-id>
+pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection" / String)
+        .and(warp::delete())
+        .and_then(call_remove_collection)
+        .with(&get_cors_config())
+}
+
+async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rejection> {
+    match remove_collection_handler(collection_id) {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
