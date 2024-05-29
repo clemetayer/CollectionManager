@@ -95,4 +95,36 @@ export class CollectionService {
                 console.error('error update all collections :', error);
             })
     }
+
+    async removeChildCollection(parent_id : string, child_id : string) {
+        const body : PostAddCollectionToParent = {
+            parent_collection_id: parent_id,
+            child_collection_id: child_id
+        };
+        return this.axiosInstance.delete(ConstantsAPI.PATH_REMOVE_COLLECTION_TO_PARENT,
+            {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+                data : body
+            })
+            .catch(error => {
+                console.error('error remove child collection :', error);
+            })
+    }
+
+    async removeCollection(collection_id : string) {
+
+        return this.axiosInstance.delete(ConstantsAPI.PATH_COLLECTION + collection_id,
+            {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                    'Content-Type': 'application/json'
+                },
+            })
+            .catch(error => {
+                console.error('error remove collection :', error);
+            })
+    }
 }

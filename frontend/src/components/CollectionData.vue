@@ -14,10 +14,13 @@
                 selectedCollection: "",
                 collection: {} as Collection,
                 openAddChildCollectionDialog: false,
+                openRemoveCollectionDialog: false,
+                openRemoveChildCollectionDialog: false,
                 childCollectionURL : '',
                 fromUrlChecked: false,
                 collections: [] as SelectOption[],
-                childCollectionSelection: ''
+                childCollectionSelection: '',
+                childCollectionToRemove: {} as Collection,
             }
         },
         methods: {
@@ -50,6 +53,23 @@
             onSelectChildCollection(pSelectedOption : any) {
                 this.childCollectionSelection = pSelectedOption.value;
             },
+            openRemoveChildCollection(childCollection : Collection) {
+                this.childCollectionToRemove = childCollection;
+                this.openRemoveChildCollectionDialog = true;
+            },
+            removeChildCollection(result : any) {
+                if(result) {
+                    collectionService.removeChildCollection(this.collection.deezer_id, this.childCollectionToRemove.deezer_id);
+                }
+            },
+            openRemoveCollection() {
+                this.openRemoveCollectionDialog = true;
+            },
+            removeCollection(result : any) {
+                if(result) {
+                    collectionService.removeCollection(this.collection.deezer_id);
+                }
+            }
         }
     });
 </script>
@@ -60,6 +80,7 @@
             <v-container>
                 <a v-bind:href="collection.url">{{ collection.name }}</a>
                 <ui-icon-button icon="add" @click="addChildCollection()"></ui-icon-button>
+                <ui-icon-button icon="clear" @click="openRemoveCollection()"></ui-icon-button>
             </v-container>
         </h2>
         <ui-button @click="updateCollection">Update collection</ui-button>
@@ -68,18 +89,24 @@
             <ui-grid-cell>
                 <ui-list>
                     <ui-item v-for="childCol in collection.children_col" :key="childCol">
+                        <ui-item-first-content>
+                            <ui-icon>queue_music</ui-icon>
+                        </ui-item-first-content>
                         <ui-item-text-content>
                             <ui-item-text1>
                                 <a v-bind:href="childCol.url">{{ childCol.name }}</a>
                             </ui-item-text1>
                         </ui-item-text-content>
                         <ui-item-last-content>
-                            <ui-icon>queue_music</ui-icon>
+                            <ui-icon-button icon="clear" @click="openRemoveChildCollection(childCol)"></ui-icon-button>
                         </ui-item-last-content>
                     </ui-item>
                 </ui-list>
                 <ui-list>
                     <ui-item v-for="track in collection.tracks" :key="track">
+                        <ui-item-first-content>
+                            <ui-icon>music_note</ui-icon>
+                        </ui-item-first-content>
                         <ui-item-text-content>
                             <ui-item-text1>
                                 <a v-bind:href="track.link">{{ track.title }}</a>
@@ -88,9 +115,6 @@
                                 {{ track.artist }}
                             </ui-item-text2>
                         </ui-item-text-content>
-                        <ui-item-last-content>
-                            <ui-icon>music_note</ui-icon>
-                        </ui-item-last-content>
                     </ui-item>
                 </ui-list>
             </ui-grid-cell>
@@ -118,6 +142,22 @@
                         </ui-textfield>
                     </div>
                 </form>
+            </ui-dialog-content>
+            <ui-dialog-actions></ui-dialog-actions>
+        </ui-dialog>
+        <ui-dialog v-model="openRemoveChildCollectionDialog" @confirm="removeChildCollection">
+            <ui-dialog-title>Remove the child collection ?</ui-dialog-title>
+            <ui-dialog-content>
+                Do you really want to remove the collection <a v-bind:href="childCollectionToRemove.url">{{ childCollectionToRemove.name }}</a> from the collection <a v-bind:href="collection.url">{{ collection.name }}</a>? <br/><br/>
+                This will not remove the distant Deezer playlist, and the remaining tracks should be removed from the playlist manually.
+            </ui-dialog-content>
+            <ui-dialog-actions></ui-dialog-actions>
+        </ui-dialog>
+        <ui-dialog v-model="openRemoveCollectionDialog" @confirm="removeCollection">
+            <ui-dialog-title>Remove the collection ?</ui-dialog-title>
+            <ui-dialog-content>
+                Do you really want to remove the collection <a v-bind:href="collection.url">{{ collection.name }}</a> from the database ? <br/><br/>
+                This will not remove the distant Deezer playlist.
             </ui-dialog-content>
             <ui-dialog-actions></ui-dialog-actions>
         </ui-dialog>
