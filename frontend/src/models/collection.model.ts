@@ -17,3 +17,8 @@ export type PostAddCollectionToParent = {
     parent_collection_id : string,
     child_collection_id : string
 }
+
+export type PostRemoveCollectionToParent = {
+    parent_collection_id : string,
+    child_collection_id : string
+}
