@@ -58,16 +58,34 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
         "getting collection with tracks from deezer id {}",
         deezer_id.clone()
     );
+    let mut ret_collection: Collection;
     match database::get_collection_with_tracks(deezer_id.clone()) {
         Ok(collection) => {
             println!("collection = {:?}", collection);
             let playlist = get_playlist(convert_string_to_u64(&deezer_id.clone().as_str())).await?;
+            let children_collections = get_direct_children_collections_without_tracks(deezer_id);
+            let mut tracks = playlist.tracks;
+            for children_col in children_collections.clone().into_iter() {
+                let playlist = get_playlist(convert_string_to_u64(
+                    &children_col.deezer_id.clone().as_str(),
+                ))
+                .await?;
+                for track in playlist.tracks.into_iter() {
+                    let track_index = tracks
+                        .clone()
+                        .into_iter()
+                        .position(|el| el.deezer_id == track.deezer_id);
+                    if track_index.is_some() {
+                        tracks.remove(track_index.unwrap());
+                    }
+                }
+            }
             return Ok(Collection {
                 name: collection.name,
                 deezer_id: collection.deezer_id,
                 url: collection.url,
-                tracks: playlist.tracks,
-                children_col: get_direct_children_collections_without_tracks(deezer_id),
+                tracks: tracks,
+                children_col: children_collections,
             });
         }
         Err(e) => {
