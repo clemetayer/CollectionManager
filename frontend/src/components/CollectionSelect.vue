@@ -82,6 +82,7 @@ import { type SelectOption } from "../models/balmui.model"
                         <label>Collection name :</label>
                         <ui-textfield
                             v-model="collectionName"
+                            :disabled="fromPlaylistChecked"
                             helper-text-id="collection-name-field-helper-text"
                         >
                             Collection name
