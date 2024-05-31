@@ -132,7 +132,7 @@ pub fn remove_collection_dependency(
         }
     };
     match remove_collection_to_parent(parent_id, child_id) {
-        Ok(value) => return Ok(true),
+        Ok(value) => return Ok(value),
         Err(e) => {
             eprintln!("Error while removing collection dependency : {:?}", e);
             return Err(HandlerError::HandlerDatabaseError(e));

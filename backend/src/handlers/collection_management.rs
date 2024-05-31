@@ -58,7 +58,6 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
         "getting collection with tracks from deezer id {}",
         deezer_id.clone()
     );
-    let mut ret_collection: Collection;
     match database::get_collection_with_tracks(deezer_id.clone()) {
         Ok(collection) => {
             println!("collection = {:?}", collection);
