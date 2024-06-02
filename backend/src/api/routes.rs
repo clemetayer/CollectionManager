@@ -236,24 +236,3 @@ async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rej
         Err(_) => Err(warp::reject()),
     }
 }
-
-// pub fn get_deezer_playlist() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-//     warp::path!("playlist")
-//         .and(warp::get()) // Avoids huge payloads
-//         .and_then(call_get_playlist)
-//         .with(&get_cors_config())
-// }
-
-// async fn call_get_playlist() -> Result<impl Reply, Rejection> {
-//     let playlist = collection_management::get_playlist(11043374682).await;
-//     match playlist {
-//         Ok(playlist) => {
-//             let reply = warp::reply::json(&playlist).into_response();
-//             Ok(reply)
-//         }
-//         Err(_) => {
-//             eprintln!("Error while fetching the playlist");
-//             Err(warp::reject())
-//         }
-//     }
-// }
