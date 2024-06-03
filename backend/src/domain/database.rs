@@ -3,6 +3,7 @@ use backend::schema::collection_dependencies;
 use backend::schema::collections;
 use backend::*;
 use diesel::prelude::*;
+use diesel::sql_query;
 use diesel::SqliteConnection;
 
 use crate::domain::domain_models::CollectionDatabase;
@@ -279,6 +280,36 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
                 }
             };
             return Ok(res);
+        }
+        Err(e) => {
+            eprintln!("Error trying connect to the database : {e}");
+            return Err(DatabaseDomainError::ConnectionError());
+        }
+    }
+}
+
+pub fn domain_clear_database() -> Result<bool, DatabaseDomainError> {
+    match &mut establish_connection() {
+        Ok(connection) => {
+            match diesel::delete(collections::table).execute(connection) {
+                Ok(_) => {
+                    println!("collections cleared");
+                }
+                Err(e) => {
+                    eprintln!("Error clearing the collections : {:?}", e);
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            };
+            match diesel::delete(collection_dependencies::table).execute(connection) {
+                Ok(_) => {
+                    println!("collection dependencies cleared");
+                }
+                Err(e) => {
+                    eprintln!("Error clearing the collection dependencies : {:?}", e);
+                    return Err(DatabaseDomainError::ResultError(e));
+                }
+            };
+            return Ok(true);
         }
         Err(e) => {
             eprintln!("Error trying connect to the database : {e}");

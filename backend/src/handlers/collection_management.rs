@@ -8,7 +8,8 @@ use super::collection_commons::{
 use super::handlers_models::{self, Collection, CollectionListElement};
 use crate::domain;
 use crate::domain::database::{
-    self, get_child_collections, get_collection_id_by_deezer_id, remove_collection_in_database,
+    self, domain_clear_database, get_child_collections, get_collection_id_by_deezer_id,
+    remove_collection_in_database,
 };
 use crate::domain::deezer::add_tracks_to_playlist;
 use crate::handlers::collection_commons::{convert_string_to_u64, get_playlist};
@@ -299,5 +300,13 @@ pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError
             );
             return Err(HandlerError::HandlerDatabaseError(e));
         }
+    }
+}
+
+pub fn handler_clear_database() -> Result<bool, HandlerError> {
+    println!("Clearing database");
+    match domain_clear_database() {
+        Ok(_) => return Ok(true),
+        Err(e) => return Err(HandlerError::HandlerDatabaseError(e)),
     }
 }
