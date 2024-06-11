@@ -1,6 +1,9 @@
 services:
   backend:
-    build: ../../backend
+    build:
+      context: ../../backend
+      args:
+        app_args:
     ports:
       - "8000:8000"
     volumes:

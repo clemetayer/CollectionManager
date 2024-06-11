@@ -11,7 +11,10 @@ services:
       - ../mock:/mock
 
   backend:
-    build: ../../backend
+    build:
+      context: ../../backend
+      args:
+        app_args: integration_tests
     ports:
       - "8000:8000"
     volumes:

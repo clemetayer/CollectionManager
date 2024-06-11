@@ -1,11 +1,8 @@
-use std::env;
-
-use dotenvy::dotenv;
-
 use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_playlist_id_from_url,
 };
 use super::handlers_models::{self, Collection, CollectionListElement};
+use crate::common::common::get_env_variable;
 use crate::domain;
 use crate::domain::database::{
     self, domain_clear_database, get_child_collections, get_collection_id_by_deezer_id,
@@ -270,12 +267,7 @@ pub async fn update_all_collections() -> Result<bool, HandlerError> {
 }
 
 fn get_max_depth() -> u64 {
-    dotenv().ok();
-    return convert_string_to_u64(
-        &env::var("MAX_COLLECTION_DEPTH")
-            .expect("MAX_COLLECTION_DEPTH must be set")
-            .as_str(),
-    );
+    return convert_string_to_u64(&get_env_variable("MAX_COLLECTION_DEPTH").as_str());
 }
 
 pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError> {
