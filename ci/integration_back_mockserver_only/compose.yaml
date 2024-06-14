@@ -1,0 +1,11 @@
+services:
+  mockServer:
+    image: mockserver/mockserver:latest
+    ports:
+      - 1080:1080
+    environment:
+      MOCKSERVER_WATCH_INITIALIZATION_JSON: "true"
+      MOCKSERVER_PROPERTY_FILE: /mock/mockserver.properties
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /mock/deezer.json
+    volumes:
+      - ../mock:/mock

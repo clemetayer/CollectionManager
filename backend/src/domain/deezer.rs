@@ -23,15 +23,18 @@ fn get_token() -> String {
 }
 
 pub async fn create_playlist(name: String) -> Result<u64, Error> {
-    let url: String = format!(
-        "{}/{}/{}/{}?{}&{}",
+    let mut url: String = format!(
+        "{}/{}/{}/{}?{}",
         get_deezer_api_path(),
         PATH_USER,
         get_user_id(),
         PATH_PLAYLISTS,
-        format!("title={}", name),
-        format!("access_token={}", get_token())
+        format!("title={}", name)
     );
+    let token = get_token();
+    if token != "" {
+        url = format!("{}&access_token={}", url, token);
+    }
     let client = reqwest::Client::new();
     let response: reqwest::Response = client.post(url).header("content-length", 0).send().await?;
     match response.json::<CreatedPlaylist>().await {
@@ -53,13 +56,16 @@ pub async fn create_playlist(name: String) -> Result<u64, Error> {
 }
 
 pub async fn get_playlist(deezer_playlist_id: u64) -> Result<Playlist, Error> {
-    let url: String = format!(
-        "{}/{}/{}?{}",
+    let mut url: String = format!(
+        "{}/{}/{}",
         get_deezer_api_path(),
         PATH_PLAYLIST,
         deezer_playlist_id,
-        format!("access_token={}", get_token())
     );
+    let token = get_token();
+    if token != "" {
+        url = format!("{}?access_token={}", url, token);
+    }
     let client = reqwest::Client::new();
     let response = client.get(url).send().await?;
     match response.json::<deezer::models::Playlist>().await {
@@ -86,18 +92,19 @@ pub async fn add_tracks_to_playlist(
         for track_id in track_ids.into_iter() {
             track_ids_query_params.push_str(&format!("{},", track_id));
         }
-        let url: String = format!(
+        track_ids_query_params.pop(); // removes the last comma
+        let mut url: String = format!(
             "{}/{}/{}/{}?{}",
             get_deezer_api_path(),
             PATH_PLAYLIST,
             playlist_id.clone(),
             PATH_TRACKS,
-            format!(
-                "access_token={}&songs={}",
-                get_token(),
-                track_ids_query_params
-            )
+            format!("songs={}", track_ids_query_params)
         );
+        let token = get_token();
+        if token != "" {
+            url = format!("{}&access_token={}", url, token);
+        }
         let client = reqwest::Client::new();
         let response = client.post(url).header("content-length", 0).send().await?;
         match response.json::<bool>().await {

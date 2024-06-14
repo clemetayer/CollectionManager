@@ -10,9 +10,239 @@
     "httpResponse": {
       "body": {
         "type": "JSON",
-        "value": "{\"id\": 123456,\"title\": \"test\",\"description\": \"test\",\"duration\": 1,\"public\": false,\"nb_tracks\": 2,\"type\": \"playlist\",\"tracks\": {\"data\": [{\"id\": 1,\"readable\": true,\"title\": \"test1\",\"link\": \"https://www.deezer.com/track/1\",\"duration\": 212,\"artist\": {\"id\": 1,\"name\": \"test1\",\"link\": \"https://www.deezer.com/artist/1\",\"type\": \"artist\"},\"album\": {\"id\": 1,\"title\": \"test1\",\"tracklist\": \"https://api.deezer.com/album/1/tracks\",\"type\": \"album\"},\"type\": \"track\"},{\"id\": 2,\"readable\": true,\"title\": \"test2\",\"link\": \"https://www.deezer.com/track/2\",\"duration\": 212,\"artist\": {\"id\": 2,\"name\": \"test2\",\"link\": \"https://www.deezer.com/artist/2\",\"type\": \"artist\"},\"album\": {\"id\": 2,\"title\": \"test2\",\"tracklist\": \"https://api.deezer.com/album/2/tracks\",\"type\": \"album\"},\"type\": \"track\"}]}}"
+        "json": {
+          "id": 123456,
+          "title": "test_playlist_1",
+          "description": "",
+          "duration": 10388,
+          "public": false,
+          "is_loved_track": false,
+          "collaborative": false,
+          "nb_tracks": 2,
+          "fans": 0,
+          "link": "https://www.deezer.com/playlist/123456",
+          "share": "https://www.deezer.com/playlist/123456?utm_source=deezer&utm_content=playlist-123456&utm_term=4712114342_1718220321&utm_medium=web",
+          "picture": "https://api.deezer.com/playlist/123456/image",
+          "picture_small": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/56x56-000000-80-0-0.jpg",
+          "picture_medium": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/250x250-000000-80-0-0.jpg",
+          "picture_big": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/500x500-000000-80-0-0.jpg",
+          "picture_xl": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/1000x1000-000000-80-0-0.jpg",
+          "checksum": "f125494c283e4aebef79927032ca4b37",
+          "tracklist": "https://api.deezer.com/playlist/123456/tracks",
+          "creation_date": "2023-01-13 22:21:34",
+          "md5_image": "32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2",
+          "picture_type": "cover",
+          "creator": {
+            "id": 123456,
+            "name": "test_user_1",
+            "tracklist": "https://api.deezer.com/user/123456/flow",
+            "type": "user"
+          },
+          "type": "playlist",
+          "tracks": {
+            "data": [
+              {
+                "id": 1,
+                "readable": true,
+                "title": "test_track_1",
+                "title_short": "test_track_1",
+                "title_version": "",
+                "link": "https://www.deezer.com/track/1",
+                "duration": 212,
+                "rank": 30135,
+                "explicit_lyrics": false,
+                "explicit_content_lyrics": 0,
+                "explicit_content_cover": 2,
+                "preview": "https://cdns-preview-e.dzcdn.net/stream/c-e07ec31a9f018a06a629af9105c889d8-2.mp3",
+                "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                "time_add": 1673644894,
+                "artist": {
+                  "id": 123,
+                  "name": "test_artist_1",
+                  "link": "https://www.deezer.com/artist/123",
+                  "tracklist": "https://api.deezer.com/artist/123/top?limit=50",
+                  "type": "artist"
+                },
+                "album": {
+                  "id": 1,
+                  "title": "test_album_1",
+                  "cover": "https://api.deezer.com/album/1/image",
+                  "cover_small": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/56x56-000000-80-0-0.jpg",
+                  "cover_medium": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/250x250-000000-80-0-0.jpg",
+                  "cover_big": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/500x500-000000-80-0-0.jpg",
+                  "cover_xl": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/1000x1000-000000-80-0-0.jpg",
+                  "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                  "tracklist": "https://api.deezer.com/album/1/tracks",
+                  "type": "album"
+                },
+                "type": "track"
+              },
+              {
+                "id": 2,
+                "readable": true,
+                "title": "test_track_2",
+                "title_short": "test_track_2",
+                "title_version": "",
+                "link": "https://www.deezer.com/track/2",
+                "duration": 212,
+                "rank": 30135,
+                "explicit_lyrics": false,
+                "explicit_content_lyrics": 0,
+                "explicit_content_cover": 2,
+                "preview": "https://cdns-preview-e.dzcdn.net/stream/c-e07ec31a9f018a06a629af9105c889d8-2.mp3",
+                "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                "time_add": 1673644894,
+                "artist": {
+                  "id": 16956,
+                  "name": "test_artist_2",
+                  "link": "https://www.deezer.com/artist/456",
+                  "tracklist": "https://api.deezer.com/artist/123/top?limit=50",
+                  "type": "artist"
+                },
+                "album": {
+                  "id": 1,
+                  "title": "test_album_2",
+                  "cover": "https://api.deezer.com/album/2/image",
+                  "cover_small": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/56x56-000000-80-0-0.jpg",
+                  "cover_medium": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/250x250-000000-80-0-0.jpg",
+                  "cover_big": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/500x500-000000-80-0-0.jpg",
+                  "cover_xl": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/1000x1000-000000-80-0-0.jpg",
+                  "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                  "tracklist": "https://api.deezer.com/album/2/tracks",
+                  "type": "album"
+                },
+                "type": "track"
+              }
+            ],
+            "checksum": "f125494c283e4aebef79927032ca4b37"
+          }
+        }
       },
       "statusCode": 200
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/playlist/{playlistId}",
+      "pathParameters": {
+        "playlistId": ["456789"]
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "type": "JSON",
+        "json": {
+          "id": 456789,
+          "title": "test_playlist_1",
+          "description": "",
+          "duration": 10388,
+          "public": false,
+          "is_loved_track": false,
+          "collaborative": false,
+          "nb_tracks": 1,
+          "fans": 0,
+          "link": "https://www.deezer.com/playlist/456789",
+          "share": "https://www.deezer.com/playlist/456789?utm_source=deezer&utm_content=playlist-123456&utm_term=4712114342_1718220321&utm_medium=web",
+          "picture": "https://api.deezer.com/playlist/456789/image",
+          "picture_small": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/56x56-000000-80-0-0.jpg",
+          "picture_medium": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/250x250-000000-80-0-0.jpg",
+          "picture_big": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/500x500-000000-80-0-0.jpg",
+          "picture_xl": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2/1000x1000-000000-80-0-0.jpg",
+          "checksum": "f125494c283e4aebef79927032ca4b37",
+          "tracklist": "https://api.deezer.com/playlist/456789/tracks",
+          "creation_date": "2023-01-13 22:21:34",
+          "md5_image": "32d72b7b1a797f465624156dacf560ba-ade1a1ec32896f62593a6ce36b5e92c8-4eb9923010721c95b95395e7b787c7ad-18ce0cc8fd7009af090010940fee19a2",
+          "picture_type": "cover",
+          "creator": {
+            "id": 123456,
+            "name": "test_user_1",
+            "tracklist": "https://api.deezer.com/user/123456/flow",
+            "type": "user"
+          },
+          "type": "playlist",
+          "tracks": {
+            "data": [
+              {
+                "id": 3,
+                "readable": true,
+                "title": "test_track_3",
+                "title_short": "test_track_3",
+                "title_version": "",
+                "link": "https://www.deezer.com/track/3",
+                "duration": 212,
+                "rank": 30135,
+                "explicit_lyrics": false,
+                "explicit_content_lyrics": 0,
+                "explicit_content_cover": 2,
+                "preview": "https://cdns-preview-e.dzcdn.net/stream/c-e07ec31a9f018a06a629af9105c889d8-2.mp3",
+                "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                "time_add": 1673644894,
+                "artist": {
+                  "id": 123,
+                  "name": "test_artist_1",
+                  "link": "https://www.deezer.com/artist/123",
+                  "tracklist": "https://api.deezer.com/artist/123/top?limit=50",
+                  "type": "artist"
+                },
+                "album": {
+                  "id": 1,
+                  "title": "test_album_1",
+                  "cover": "https://api.deezer.com/album/1/image",
+                  "cover_small": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/56x56-000000-80-0-0.jpg",
+                  "cover_medium": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/250x250-000000-80-0-0.jpg",
+                  "cover_big": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/500x500-000000-80-0-0.jpg",
+                  "cover_xl": "https://e-cdns-images.dzcdn.net/images/cover/32d72b7b1a797f465624156dacf560ba/1000x1000-000000-80-0-0.jpg",
+                  "md5_image": "32d72b7b1a797f465624156dacf560ba",
+                  "tracklist": "https://api.deezer.com/album/1/tracks",
+                  "type": "album"
+                },
+                "type": "track"
+              }
+            ],
+            "checksum": "f125494c283e4aebef79927032ca4b37"
+          }
+        }
+      },
+      "statusCode": 200
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/user/{userId}/playlists",
+      "pathParameters": {
+        "userId": ["123456"]
+      },
+      "queryStringParameters": {
+        "title": "test_new"
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "type": "JSON",
+        "json": {
+          "id": 456789
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/playlist/{playlistId}/tracks",
+      "pathParameters": {
+        "playlistId": ["123456"]
+      },
+      "queryStringParameters": {
+        "songs": "3"
+      }
+    },
+    "httpResponse": {
+      "body": {
+        "type": "JSON",
+        "json": true
+      }
     }
   }
 ]

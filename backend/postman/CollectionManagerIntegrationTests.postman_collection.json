@@ -1,0 +1,691 @@
+{
+	"info": {
+		"_postman_id": "54d6dd4f-06ce-443c-82f5-170928e39ad1",
+		"name": "CollectionManagerIntegrationTests",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "35978410"
+	},
+	"item": [
+		{
+			"name": "IntegrationTestSuite - standard usage",
+			"item": [
+				{
+					"name": "clear database",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/clear-database",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"clear-database"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "init_collection",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"test\",\n    \"from_playlist\":\"https://www.deezer.com/fr/playlist/123456\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/collection/init",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "init_collection_new",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\":\"test_new\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/collection/init",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"init"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list collections",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = [",
+									"        {",
+									"            \"name\": \"test_playlist_1\",",
+									"            \"deezer_id\": \"123456\",",
+									"            \"url\": \"https://www.deezer.com/playlist/123456\"",
+									"        },",
+									"        {",
+									"            \"name\": \"test_new\",",
+									"            \"deezer_id\": \"456789\",",
+									"            \"url\": \"https://www.deezer.com/fr/playlist/456789\"",
+									"        }",
+									"    ]",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection by deezer id 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = {",
+									"        \"name\": \"test_playlist_1\",",
+									"        \"deezer_id\": \"123456\",",
+									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
+									"        \"tracks\": [",
+									"            {",
+									"                \"id\": 1,",
+									"                \"deezer_id\": \"1\",",
+									"                \"title\": \"test_track_1\",",
+									"                \"link\": \"https://www.deezer.com/track/1\",",
+									"                \"artist\": \"test_artist_1\"",
+									"            },",
+									"            {",
+									"                \"id\": 2,",
+									"                \"deezer_id\": \"2\",",
+									"                \"title\": \"test_track_2\",",
+									"                \"link\": \"https://www.deezer.com/track/2\",",
+									"                \"artist\": \"test_artist_2\"",
+									"            }",
+									"        ],",
+									"        \"children_col\": []",
+									"    }",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection by deezer id 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = {",
+									"        \"name\": \"test_new\",",
+									"        \"deezer_id\": \"456789\",",
+									"        \"url\": \"https://www.deezer.com/fr/playlist/456789\",",
+									"        \"tracks\": [",
+									"            {",
+									"                \"id\": 3,",
+									"                \"deezer_id\": \"3\",",
+									"                \"title\": \"test_track_3\",",
+									"                \"link\": \"https://www.deezer.com/track/3\",",
+									"                \"artist\": \"test_artist_1\"",
+									"            }",
+									"        ],",
+									"        \"children_col\": []",
+									"    }",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/456789",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"456789"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "add collection dependency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"parent_collection_id\":\"123456\",\n    \"child_collection_id\":\"456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/collection-management/add-collection",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"add-collection"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection by deezer id 1 - collection dependency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = {",
+									"        \"name\": \"test_playlist_1\",",
+									"        \"deezer_id\": \"123456\",",
+									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
+									"        \"tracks\": [",
+									"            {",
+									"                \"id\": 1,",
+									"                \"deezer_id\": \"1\",",
+									"                \"title\": \"test_track_1\",",
+									"                \"link\": \"https://www.deezer.com/track/1\",",
+									"                \"artist\": \"test_artist_1\"",
+									"            },",
+									"            {",
+									"                \"id\": 2,",
+									"                \"deezer_id\": \"2\",",
+									"                \"title\": \"test_track_2\",",
+									"                \"link\": \"https://www.deezer.com/track/2\",",
+									"                \"artist\": \"test_artist_2\"",
+									"            }",
+									"        ],",
+									"        \"children_col\": [",
+									"            {",
+									"                \"name\": \"test_new\",",
+									"                \"deezer_id\": \"456789\",",
+									"                \"url\": \"https://www.deezer.com/fr/playlist/456789\",",
+									"                \"tracks\": [],",
+									"                \"children_col\": []",
+									"            }",
+									"        ]",
+									"    }",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh collection 123456",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection-management/refresh-collection/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"refresh-collection",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh all collections",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection-management/refresh-all-collections",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"refresh-all-collections"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "remove collection dependency",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"parent_collection_id\":\"123456\",\n    \"child_collection_id\":\"456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/collection-management/remove-collection",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"remove-collection"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection by deezer id 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = {",
+									"        \"name\": \"test_playlist_1\",",
+									"        \"deezer_id\": \"123456\",",
+									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
+									"        \"tracks\": [",
+									"            {",
+									"                \"id\": 1,",
+									"                \"deezer_id\": \"1\",",
+									"                \"title\": \"test_track_1\",",
+									"                \"link\": \"https://www.deezer.com/track/1\",",
+									"                \"artist\": \"test_artist_1\"",
+									"            },",
+									"            {",
+									"                \"id\": 2,",
+									"                \"deezer_id\": \"2\",",
+									"                \"title\": \"test_track_2\",",
+									"                \"link\": \"https://www.deezer.com/track/2\",",
+									"                \"artist\": \"test_artist_2\"",
+									"            }",
+									"        ],",
+									"        \"children_col\": []",
+									"    }",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "refresh collection 456789",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"parent_collection_id\":\"123456\",\n    \"child_collection_id\":\"456789\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8000/collection/456789",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"456789"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "list collections",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = [",
+									"        {",
+									"            \"name\": \"test_playlist_1\",",
+									"            \"deezer_id\": \"123456\",",
+									"            \"url\": \"https://www.deezer.com/playlist/123456\"",
+									"        }",
+									"    ]",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/list",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "clear database",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/clear-database",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"clear-database"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
