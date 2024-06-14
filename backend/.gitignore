@@ -16,5 +16,5 @@ Cargo.lock
 # Special gitignores
 *.db
 *.sqlite3
-*.env
+.env
 tmp/
