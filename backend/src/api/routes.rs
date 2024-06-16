@@ -1,3 +1,4 @@
+use log::info;
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 use crate::handlers::{
@@ -49,6 +50,10 @@ pub fn init_collection() -> impl Filter<Extract = impl Reply, Error = Rejection>
 async fn call_init_collection(
     init_collection_input: InitCollectionInput,
 ) -> Result<impl Reply, Rejection> {
+    info!(
+        "initializing collection {}",
+        init_collection_input.clone().name
+    );
     let init_collections_data = InitCollection {
         name: init_collection_input.name,
         from_playlist: init_collection_input.from_playlist,
@@ -75,6 +80,7 @@ pub fn get_collection_list() -> impl Filter<Extract = impl Reply, Error = Reject
 }
 
 async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
+    info!("getting collection list");
     let collection_list = list_collections();
     match collection_list {
         Ok(collection_list) => {
@@ -98,7 +104,7 @@ pub fn get_collection_by_deezer_id() -> impl Filter<Extract = impl Reply, Error 
 }
 
 async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Reply, Rejection> {
-    println!("getting collection by deezer id {}", deezer_id.clone());
+    info!("getting collection by deezer id {}", deezer_id.clone());
     match get_collection_with_tracks(deezer_id.clone()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
         Err(e) => {
@@ -124,6 +130,11 @@ pub fn add_collection_to_parent() -> impl Filter<Extract = impl Reply, Error = R
 async fn call_add_collection_to_parent(
     add_collection_to_parent_input: AddCollectionToParent,
 ) -> Result<impl Reply, Rejection> {
+    info!(
+        "adding collection {} to {}",
+        &add_collection_to_parent_input.child_collection_id,
+        &add_collection_to_parent_input.parent_collection_id
+    );
     match add_collection_dependency(
         add_collection_to_parent_input.parent_collection_id,
         add_collection_to_parent_input.child_collection_id,
@@ -151,6 +162,7 @@ pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejecti
 }
 
 async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Rejection> {
+    info!("refreshing collection {}", collection_id);
     match refresh_collection_handler(collection_id).await {
         Ok(_) => {
             let reply = warp::reply();
@@ -173,6 +185,7 @@ pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Re
 }
 
 async fn call_refresh_all_collections() -> Result<impl Reply, Rejection> {
+    info!("refreshing all collections");
     match update_all_collections().await {
         Ok(_) => {
             let reply = warp::reply();
@@ -200,6 +213,11 @@ pub fn remove_collection_from_parent(
 async fn call_remove_collection_to_parent(
     remove_collection_to_parent_input: RemoveCollectionToParent,
 ) -> Result<impl Reply, Rejection> {
+    info!(
+        "removing collection {} from collection {}",
+        remove_collection_to_parent_input.child_collection_id,
+        remove_collection_to_parent_input.parent_collection_id
+    );
     match remove_collection_dependency(
         remove_collection_to_parent_input.parent_collection_id,
         remove_collection_to_parent_input.child_collection_id,
@@ -225,6 +243,7 @@ pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejectio
 }
 
 async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rejection> {
+    info!("removing collection {}", collection_id);
     match remove_collection_handler(collection_id) {
         Ok(_) => {
             let reply = warp::reply();
@@ -247,6 +266,7 @@ pub fn clear_database() -> impl Filter<Extract = impl Reply, Error = Rejection> 
 }
 
 async fn call_clear_database() -> Result<impl Reply, Rejection> {
+    info!("clearing database");
     match handler_clear_database() {
         Ok(_) => {
             let reply = warp::reply();

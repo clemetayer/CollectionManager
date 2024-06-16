@@ -16,10 +16,11 @@ VOLUME /backend/db
 
 ARG app_args
 ENV APP_ARGS=$app_args 
+ENV LOG_LEVEL=ERROR
 
 RUN rm ./target/release/deps/backend*
 RUN cargo install --path .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "backend ${APP_ARGS}"]
+CMD ["sh", "-c", "RUST_LOG=${LOG_LEVEL} backend ${APP_ARGS}"]

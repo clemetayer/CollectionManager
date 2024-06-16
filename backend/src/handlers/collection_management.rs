@@ -1,5 +1,8 @@
+use log::error;
+
 use super::collection_commons::{
-    create_collection_from_playlist, create_new_playlist, get_playlist_id_from_url,
+    create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id_handler,
+    get_playlist_id_from_url,
 };
 use super::handlers_models::{self, Collection, CollectionListElement};
 use crate::common::common::get_env_variable;
@@ -9,7 +12,9 @@ use crate::domain::database::{
     remove_collection_in_database,
 };
 use crate::domain::deezer::add_tracks_to_playlist;
-use crate::handlers::collection_commons::{convert_string_to_u64, get_playlist};
+use crate::handlers::collection_commons::{
+    convert_string_to_u64, get_playlist, log_database_error, log_deezer_error,
+};
 use crate::handlers::errors::*;
 use crate::handlers::handlers_models::Playlist;
 
@@ -28,7 +33,6 @@ pub async fn init_collections(
 }
 
 pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
-    println!("listing collections");
     match domain::database::list_collections() {
         Ok(collections_database) => {
             let collections_handler = collections_database
@@ -45,22 +49,19 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
             Ok(collections_handler)
         }
         Err(e) => {
-            eprintln!("Error while fetching the collections from the database");
-            Err(HandlerError::HandlerDatabaseError(e))
+            return Err(log_database_error(&format!(
+                "Error while fetching the collections from the database : {:?}",
+                e
+            )));
         }
     }
 }
 
 pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, HandlerError> {
-    println!(
-        "getting collection with tracks from deezer id {}",
-        deezer_id.clone()
-    );
     match database::get_collection_with_tracks(deezer_id.clone()) {
         Ok(collection) => {
-            println!("collection = {:?}", collection);
             let playlist = get_playlist(convert_string_to_u64(&deezer_id.clone().as_str())).await?;
-            let children_collections = get_direct_children_collections_without_tracks(deezer_id);
+            let children_collections = get_direct_children_collections_without_tracks(deezer_id)?;
             let mut tracks = playlist.tracks;
             for children_col in children_collections.clone().into_iter() {
                 let playlist = get_playlist(convert_string_to_u64(
@@ -86,28 +87,20 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
             });
         }
         Err(e) => {
-            eprintln!(
+            return Err(log_database_error(&format!(
                 "Error while getting the collection with tracks that has deezer id {} : {:?}",
-                deezer_id, e
-            );
-            return Err(HandlerError::HandlerDatabaseError(e));
+                &deezer_id, e
+            )));
         }
     }
 }
 
 // will return the basic children collections (no tracks or other children collections)
-fn get_direct_children_collections_without_tracks(deezer_id: String) -> Vec<Collection> {
-    let mut parent_id: i32 = -1;
+fn get_direct_children_collections_without_tracks(
+    deezer_id: String,
+) -> Result<Vec<Collection>, HandlerError> {
+    let mut parent_id = get_collection_id_by_deezer_id_handler(deezer_id)?;
     let mut children_collections: Vec<Collection> = Vec::new();
-    match get_collection_id_by_deezer_id(deezer_id.clone()) {
-        Ok(id) => parent_id = id,
-        Err(e) => {
-            eprintln!(
-                "Error while getting collection id from deezer_id {} : {:?}",
-                deezer_id, e
-            );
-        }
-    }
     match get_child_collections(parent_id) {
         Ok(collections) => {
             children_collections = collections
@@ -122,85 +115,54 @@ fn get_direct_children_collections_without_tracks(deezer_id: String) -> Vec<Coll
                 .collect::<Vec<_>>();
         }
         Err(e) => {
-            eprintln!(
+            return Err(log_database_error(&format!(
                 "Error while getting child collections of {} : {:?}",
-                parent_id, e
-            );
+                &parent_id, e
+            )));
         }
     }
-    return children_collections;
+    return Ok(children_collections);
 }
 
 pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, HandlerError> {
-    println!("refreshing collection {}", collection_id.clone());
-    let mut collection_id_i32: i32;
-    let mut parent_playlist: Playlist;
-    let mut parent_playlist_tracks_ids: Vec<String>;
-    match get_collection_id_by_deezer_id(collection_id.clone()) {
-        Ok(id) => collection_id_i32 = id,
-        Err(e) => {
-            eprintln!(
-                "Error getting collection id by deezer id {} : {:?}",
-                collection_id, e
-            );
-            return Err(HandlerError::HandlerDatabaseError(e));
-        }
-    }
-    match get_playlist(convert_string_to_u64(&collection_id.as_str())).await {
-        Ok(playlist) => {
-            parent_playlist = playlist.clone();
-            parent_playlist_tracks_ids = playlist
-                .tracks
-                .into_iter()
-                .map(|track| track.deezer_id)
-                .collect::<Vec<_>>()
-        }
-        Err(e) => {
-            eprintln!("Error getting playlist {} : {:?}", collection_id, e);
-            return Err(HandlerError::HandlerDeezerError());
-        }
-    }
-    match get_child_collections(collection_id_i32) {
+    let playlist = get_playlist(convert_string_to_u64(&collection_id.as_str())).await?;
+    let mut parent_playlist_tracks_ids = playlist
+        .clone()
+        .tracks
+        .into_iter()
+        .map(|track| track.deezer_id)
+        .collect::<Vec<_>>();
+    match get_child_collections(get_collection_id_by_deezer_id_handler(
+        collection_id.clone(),
+    )?) {
         Ok(child_collections) => {
             let mut tracks_to_add: Vec<String> = Vec::new();
             for collection in child_collections.into_iter() {
-                println!("Adding child collection {}", collection.name);
-                match get_playlist(convert_string_to_u64(&collection.deezer_id.as_str())).await {
-                    Ok(child_playlist) => {
-                        for track in child_playlist.tracks.into_iter() {
-                            println!("Checking track {}", track.title);
-                            if !tracks_to_add.contains(&track.deezer_id)
-                                && !parent_playlist_tracks_ids.contains(&track.deezer_id)
-                            {
-                                tracks_to_add.push(track.deezer_id);
-                            }
-                        }
-                    }
-                    Err(e) => {
-                        eprintln!(
-                            "Error while getting child playlist {} : {:?}",
-                            collection.deezer_id, e
-                        );
+                let child_playlist =
+                    get_playlist(convert_string_to_u64(&collection.deezer_id.as_str())).await?;
+                for track in child_playlist.tracks.into_iter() {
+                    if !tracks_to_add.contains(&track.deezer_id)
+                        && !parent_playlist_tracks_ids.contains(&track.deezer_id)
+                    {
+                        tracks_to_add.push(track.deezer_id);
                     }
                 }
             }
             match add_tracks_to_playlist(collection_id.clone(), tracks_to_add).await {
                 Ok(_) => return Ok(true),
                 Err(e) => {
-                    eprintln!(
+                    return Err(log_deezer_error(&format!(
                         "Error while adding tracks to the playlist {} : {:?}",
-                        collection_id, e
-                    );
-                    return Err(HandlerError::HandlerDeezerError());
+                        &collection_id, e
+                    )));
                 }
             }
         }
         Err(e) => {
-            eprintln!(
+            return Err(log_database_error(&format!(
                 "Error while getting the children from collection {} : {:?}",
-                collection_id, e
-            );
-            return Err(HandlerError::HandlerDatabaseError(e));
+                &collection_id, e
+            )));
         }
     }
 }
@@ -220,17 +182,7 @@ pub async fn update_all_collections() -> Result<bool, HandlerError> {
             }
             playlists_ids_to_update.insert(0, child_id.clone());
             // Add the next children ids
-            let mut parent_id: i32 = -1;
-            match get_collection_id_by_deezer_id(child_id.clone()) {
-                Ok(id) => parent_id = id,
-                Err(e) => {
-                    eprintln!(
-                        "Error getting collection id by deezer id {} : {:?}",
-                        child_id, e
-                    );
-                }
-            }
-            match get_child_collections(parent_id) {
+            match get_child_collections(get_collection_id_by_deezer_id_handler(child_id.clone())?) {
                 Ok(child_collections) => {
                     for child_collection in child_collections.into_iter() {
                         if !children_ids.contains(&child_collection.deezer_id) {
@@ -239,10 +191,10 @@ pub async fn update_all_collections() -> Result<bool, HandlerError> {
                     }
                 }
                 Err(e) => {
-                    eprintln!(
+                    return Err(log_database_error(&format!(
                         "Error getting child collections of collection {} : {:?}",
-                        child_id, e
-                    );
+                        &child_id, e
+                    )));
                 }
             }
         }
@@ -254,12 +206,11 @@ pub async fn update_all_collections() -> Result<bool, HandlerError> {
         }
     }
     // Update collections
-    println!("Collections to update : {:?}", playlists_ids_to_update);
     for id in playlists_ids_to_update.into_iter() {
         match refresh_collection_handler(id.clone()).await {
             Ok(_) => {}
             Err(e) => {
-                eprintln!("Error while refreshing collection {} : {:?}", id, e);
+                error!("Error while refreshing collection {} : {:?}", id, e);
             }
         }
     }
@@ -271,34 +222,26 @@ fn get_max_depth() -> u64 {
 }
 
 pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError> {
-    let mut collection_id: i32 = -1;
-    println!("Removing collection {}", deezer_id.clone());
-    match get_collection_id_by_deezer_id(deezer_id.clone()) {
-        Ok(id) => collection_id = id,
-        Err(e) => {
-            eprintln!(
-                "Error while getting collection id from deezer_id {} : {:?}",
-                collection_id, e
-            );
-            return Err(HandlerError::HandlerDatabaseError(e));
-        }
-    };
-    match remove_collection_in_database(collection_id) {
+    match remove_collection_in_database(get_collection_id_by_deezer_id_handler(deezer_id.clone())?)
+    {
         Ok(res) => return Ok(res),
         Err(e) => {
-            eprintln!(
+            return Err(log_database_error(&format!(
                 "Error while removing collection {} in database : {:?}",
                 deezer_id, e
-            );
-            return Err(HandlerError::HandlerDatabaseError(e));
+            )));
         }
     }
 }
 
 pub fn handler_clear_database() -> Result<bool, HandlerError> {
-    println!("Clearing database");
     match domain_clear_database() {
         Ok(_) => return Ok(true),
-        Err(e) => return Err(HandlerError::HandlerDatabaseError(e)),
+        Err(e) => {
+            return Err(log_database_error(&format!(
+                "Error while clearing the database : {:?}",
+                e
+            )))
+        }
     }
 }

@@ -13,3 +13,5 @@ diesel = { version = "2.1.5", features = ["sqlite"] }
 dotenvy = "0.15"
 reqwest = {version = "0.12.3", features = ["blocking", "json"]}
 deezer = "0.1.0"
+log = "0.4"
+env_logger = "0.11.3"

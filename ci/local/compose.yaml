@@ -4,6 +4,8 @@ services:
       context: ../../backend
       args:
         app_args:
+    environment:
+      LOG_LEVEL: ERROR
     ports:
       - "8000:8000"
     volumes:

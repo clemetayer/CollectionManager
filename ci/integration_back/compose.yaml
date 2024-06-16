@@ -15,6 +15,8 @@ services:
       context: ../../backend
       args:
         app_args: integration_tests
+    environment:
+      LOG_LEVEL: TRACE
     ports:
       - "8000:8000"
     volumes:
