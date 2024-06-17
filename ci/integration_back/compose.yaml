@@ -9,6 +9,7 @@ services:
       MOCKSERVER_INITIALIZATION_JSON_PATH: /mock/deezer.json
     volumes:
       - ../mock:/mock
+    network_mode: host
 
   backend:
     build:
@@ -16,8 +17,9 @@ services:
       args:
         app_args: integration_tests
     environment:
-      LOG_LEVEL: TRACE
+      LOG_LEVEL: DEBUG
     ports:
-      - "8000:8000"
+      - 8000:8000
     volumes:
       - ../../backend/db:/backend/db
+    network_mode: host
