@@ -267,7 +267,7 @@ fn get_connection() -> Result<SqliteConnection, DatabaseError> {
     info!("Database : getting connection to database");
     match establish_connection() {
         Ok(conn) => return Ok(conn),
-        Err(e) => {
+        Err(_) => {
             return Err(log_connection_error());
         }
     }

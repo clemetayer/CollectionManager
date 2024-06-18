@@ -97,8 +97,8 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
 fn get_direct_children_collections_without_tracks(
     deezer_id: String,
 ) -> Result<Vec<Collection>, DomainError> {
-    let mut parent_id = get_collection_id_by_deezer_id_handler(deezer_id)?;
-    let mut children_collections: Vec<Collection> = Vec::new();
+    let parent_id = get_collection_id_by_deezer_id_handler(deezer_id)?;
+    let children_collections: Vec<Collection>;
     match get_child_collections(parent_id) {
         Ok(collections) => {
             children_collections = collections
@@ -124,7 +124,7 @@ fn get_direct_children_collections_without_tracks(
 
 pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, DomainError> {
     let playlist = get_playlist(convert_string_to_u64(&collection_id.as_str())).await?;
-    let mut parent_playlist_tracks_ids = playlist
+    let parent_playlist_tracks_ids = playlist
         .clone()
         .tracks
         .into_iter()
