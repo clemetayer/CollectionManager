@@ -1,13 +1,12 @@
+use crate::common::common::get_env_variable;
+use crate::infrastructure::database_models::CollectionDatabase;
 use backend::models::*;
 use backend::schema::collection_dependencies;
 use backend::schema::collections;
-use backend::*;
 use diesel::prelude::*;
 use diesel::SqliteConnection;
 use log::error;
 use log::info;
-
-use crate::infrastructure::database_models::CollectionDatabase;
 
 use super::database_models::InitCollectionDatabase;
 use super::errors::DatabaseError;
@@ -263,6 +262,11 @@ pub fn domain_clear_database() -> Result<bool, DatabaseError> {
     return Ok(true);
 }
 
+fn establish_connection() -> Result<SqliteConnection, ConnectionError> {
+    let database_url: String = get_env_variable("DATABASE_URL");
+    SqliteConnection::establish(&(database_url.as_str()))
+}
+
 fn get_connection() -> Result<SqliteConnection, DatabaseError> {
     info!("Database : getting connection to database");
     match establish_connection() {
@@ -276,7 +280,7 @@ fn get_connection() -> Result<SqliteConnection, DatabaseError> {
 fn load_collections(
     connection: &mut SqliteConnection,
 ) -> Result<Vec<Collection>, diesel::result::Error> {
-    use self::schema::collections::dsl::*;
+    use backend::schema::collections::dsl::*;
     collections.select(Collection::as_select()).load(connection)
 }
 
