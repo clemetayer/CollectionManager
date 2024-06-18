@@ -1,5 +1,5 @@
-pub mod database;
-pub mod deezer;
-pub mod deezer_models;
+pub mod collection_commons;
+pub mod collection_dependencies;
+pub mod collection_management;
 pub mod domain_models;
 pub mod errors;

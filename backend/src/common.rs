@@ -6,7 +6,7 @@ pub mod common {
 
     fn get_dotenv() -> Option<PathBuf> {
         let args: Vec<String> = env::args().collect();
-        if (args.contains(&INTEGRATION_TESTS_ARG.to_string())) {
+        if args.contains(&INTEGRATION_TESTS_ARG.to_string()) {
             return dotenvy::from_filename("integration_tests.env").ok();
         }
         return dotenvy::from_filename(".env").ok();

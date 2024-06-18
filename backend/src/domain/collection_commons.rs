@@ -1,12 +1,13 @@
-use super::handlers_models::{Playlist, Track};
-use crate::domain::database::get_collection_id_by_deezer_id;
-use crate::domain::deezer::create_playlist;
-use crate::domain::{self, domain_models::InitCollectionDatabase};
-use crate::handlers::errors::*;
+use super::domain_models::{Playlist, Track};
+use super::errors::DomainError;
+use crate::infrastructure;
+use crate::infrastructure::database::get_collection_id_by_deezer_id;
+use crate::infrastructure::database_models::InitCollectionDatabase;
+use crate::infrastructure::deezer::create_playlist;
 use deezer::models::{DeezerArray, PlaylistTrack};
 use log::error;
 
-pub async fn create_new_playlist(name: String) -> Result<usize, HandlerError> {
+pub async fn create_new_playlist(name: String) -> Result<usize, DomainError> {
     let ret_size: usize;
     match create_playlist(name.clone()).await {
         Ok(id) => {
@@ -15,7 +16,7 @@ pub async fn create_new_playlist(name: String) -> Result<usize, HandlerError> {
                 url: format!("https://www.deezer.com/fr/playlist/{}", id),
                 deezer_id: format!("{}", id),
             };
-            match domain::database::init_collection(database_collection) {
+            match infrastructure::database::init_collection(database_collection) {
                 Ok(size) => {
                     ret_size = size;
                 }
@@ -37,7 +38,7 @@ pub async fn create_new_playlist(name: String) -> Result<usize, HandlerError> {
     return Ok(ret_size);
 }
 
-pub async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, HandlerError> {
+pub async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, DomainError> {
     let ret_size: usize;
     match get_playlist(playlist_id).await {
         Ok(playlist) => {
@@ -53,8 +54,8 @@ pub async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, 
     return Ok(ret_size);
 }
 
-pub async fn get_playlist(playlist_id: u64) -> Result<Playlist, HandlerError> {
-    match domain::deezer::get_playlist(playlist_id).await {
+pub async fn get_playlist(playlist_id: u64) -> Result<Playlist, DomainError> {
+    match infrastructure::deezer::get_playlist(playlist_id).await {
         Ok(playlist) => Ok(convert_playlist(playlist)),
         Err(e) => {
             return Err(log_deezer_error(&format!(
@@ -94,7 +95,7 @@ pub fn get_track_id_from_url(url: String) -> u64 {
     }
 }
 
-pub fn get_collection_id_by_deezer_id_handler(deezer_id: String) -> Result<i32, HandlerError> {
+pub fn get_collection_id_by_deezer_id_handler(deezer_id: String) -> Result<i32, DomainError> {
     match get_collection_id_by_deezer_id(deezer_id.clone()) {
         Ok(id) => {
             return Ok(id);
@@ -108,24 +109,24 @@ pub fn get_collection_id_by_deezer_id_handler(deezer_id: String) -> Result<i32, 
     };
 }
 
-pub fn log_database_error(message: &str) -> HandlerError {
+pub fn log_database_error(message: &str) -> DomainError {
     error!("Handler : {}", message);
-    return HandlerError::HandlerDatabaseError();
+    return DomainError::DomainDataError();
 }
 
-pub fn log_deezer_error(message: &str) -> HandlerError {
+pub fn log_deezer_error(message: &str) -> DomainError {
     error!("Handler : {}", message);
-    return HandlerError::HandlerDeezerError();
+    return DomainError::DomainMusicServiceError();
 }
 
-fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, HandlerError> {
+fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, DomainError> {
     let ret_size: usize;
     let database_collection = InitCollectionDatabase {
         name: playlist.title,
         url: playlist.url.clone(),
         deezer_id: playlist.id.to_string(),
     };
-    match domain::database::init_collection(database_collection) {
+    match infrastructure::database::init_collection(database_collection) {
         Ok(size) => {
             ret_size = size;
         }

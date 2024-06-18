@@ -1,5 +1,5 @@
 #[derive(Debug)]
-pub enum DatabaseDomainError {
-    ResultError(),
-    ConnectionError(),
+pub enum DomainError {
+    DomainDataError(),
+    DomainMusicServiceError(),
 }

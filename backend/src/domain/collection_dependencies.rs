@@ -1,11 +1,11 @@
 use crate::{
-    domain::{
+    domain::errors::DomainError,
+    infrastructure::{
         database::{
             add_collection_to_parent, get_collection_id_by_deezer_id, remove_collection_to_parent,
         },
-        errors::DatabaseDomainError,
+        errors::DatabaseError,
     },
-    handlers::errors::HandlerError,
 };
 
 use super::collection_commons::{
@@ -16,7 +16,7 @@ use super::collection_commons::{
 pub async fn add_collection_dependency(
     parent_deezer_id: String,
     child_deezer_id: String,
-) -> Result<bool, HandlerError> {
+) -> Result<bool, DomainError> {
     add_collection_if_not_in_database(parent_deezer_id.clone()).await?;
     add_collection_if_not_in_database(child_deezer_id.clone()).await?;
     add_collection_dependency_to_database(parent_deezer_id, child_deezer_id)?;
@@ -26,7 +26,7 @@ pub async fn add_collection_dependency(
 fn add_collection_dependency_to_database(
     parent_deezer_id: String,
     child_deezer_id: String,
-) -> Result<bool, HandlerError> {
+) -> Result<bool, DomainError> {
     let parent_id = get_collection_id_by_deezer_id_handler(parent_deezer_id)?;
     let child_id = get_collection_id_by_deezer_id_handler(child_deezer_id)?;
     match add_collection_to_parent(parent_id, child_id) {
@@ -41,13 +41,13 @@ fn add_collection_dependency_to_database(
     return Ok(true);
 }
 
-async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, HandlerError> {
+async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, DomainError> {
     match get_collection_id_by_deezer_id(deezer_id.clone()) {
         Ok(_) => {
             return Ok(true);
         } // Collection already exists, non need to add it
         Err(e) => match e {
-            DatabaseDomainError::ResultError() => {
+            DatabaseError::ResultError() => {
                 match create_collection_from_playlist(convert_string_to_u64(&deezer_id.as_str()))
                     .await
                 {
@@ -60,7 +60,7 @@ async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, Ha
                     }
                 }
             }
-            DatabaseDomainError::ConnectionError() => {
+            DatabaseError::ConnectionError() => {
                 return Err(log_database_error(&format!("Connection error while trying to add the collection {} if not in database : {:?}",&deezer_id,e)));
             }
         },
@@ -70,7 +70,7 @@ async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, Ha
 pub fn remove_collection_dependency(
     parent_deezer_id: String,
     child_deezer_id: String,
-) -> Result<bool, HandlerError> {
+) -> Result<bool, DomainError> {
     let parent_id = get_collection_id_by_deezer_id_handler(parent_deezer_id.clone())?;
     let child_id = get_collection_id_by_deezer_id_handler(child_deezer_id.clone())?;
     match remove_collection_to_parent(parent_id, child_id) {

@@ -4,23 +4,21 @@ use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id_handler,
     get_playlist_id_from_url,
 };
-use super::handlers_models::{self, Collection, CollectionListElement};
+use super::domain_models::{self, Collection, CollectionListElement};
+use super::errors::DomainError;
 use crate::common::common::get_env_variable;
-use crate::domain;
-use crate::domain::database::{
-    self, domain_clear_database, get_child_collections, get_collection_id_by_deezer_id,
-    remove_collection_in_database,
-};
-use crate::domain::deezer::add_tracks_to_playlist;
-use crate::handlers::collection_commons::{
+use crate::domain::collection_commons::{
     convert_string_to_u64, get_playlist, log_database_error, log_deezer_error,
 };
-use crate::handlers::errors::*;
-use crate::handlers::handlers_models::Playlist;
+use crate::infrastructure;
+use crate::infrastructure::database::{
+    self, domain_clear_database, get_child_collections, remove_collection_in_database,
+};
+use crate::infrastructure::deezer::add_tracks_to_playlist;
 
 pub async fn init_collections(
-    options: handlers_models::InitCollection,
-) -> Result<usize, HandlerError> {
+    options: domain_models::InitCollection,
+) -> Result<usize, DomainError> {
     // if from playlist, fill the collection with the playlist track
     match options.from_playlist {
         Some(url) => {
@@ -32,8 +30,8 @@ pub async fn init_collections(
     }
 }
 
-pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
-    match domain::database::list_collections() {
+pub fn list_collections() -> Result<Vec<CollectionListElement>, DomainError> {
+    match infrastructure::database::list_collections() {
         Ok(collections_database) => {
             let collections_handler = collections_database
                 .into_iter()
@@ -57,7 +55,7 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, HandlerError> {
     }
 }
 
-pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, HandlerError> {
+pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection, DomainError> {
     match database::get_collection_with_tracks(deezer_id.clone()) {
         Ok(collection) => {
             let playlist = get_playlist(convert_string_to_u64(&deezer_id.clone().as_str())).await?;
@@ -98,7 +96,7 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
 // will return the basic children collections (no tracks or other children collections)
 fn get_direct_children_collections_without_tracks(
     deezer_id: String,
-) -> Result<Vec<Collection>, HandlerError> {
+) -> Result<Vec<Collection>, DomainError> {
     let mut parent_id = get_collection_id_by_deezer_id_handler(deezer_id)?;
     let mut children_collections: Vec<Collection> = Vec::new();
     match get_child_collections(parent_id) {
@@ -124,7 +122,7 @@ fn get_direct_children_collections_without_tracks(
     return Ok(children_collections);
 }
 
-pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, HandlerError> {
+pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, DomainError> {
     let playlist = get_playlist(convert_string_to_u64(&collection_id.as_str())).await?;
     let mut parent_playlist_tracks_ids = playlist
         .clone()
@@ -167,7 +165,7 @@ pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, H
     }
 }
 
-pub async fn update_all_collections() -> Result<bool, HandlerError> {
+pub async fn update_all_collections() -> Result<bool, DomainError> {
     let mut playlists_ids_to_update: Vec<String> = Vec::new();
     let mut next_children_ids: Vec<String> = list_collections()?
         .into_iter()
@@ -221,7 +219,7 @@ fn get_max_depth() -> u64 {
     return convert_string_to_u64(&get_env_variable("MAX_COLLECTION_DEPTH").as_str());
 }
 
-pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError> {
+pub fn remove_collection_handler(deezer_id: String) -> Result<bool, DomainError> {
     match remove_collection_in_database(get_collection_id_by_deezer_id_handler(deezer_id.clone())?)
     {
         Ok(res) => return Ok(res),
@@ -234,7 +232,7 @@ pub fn remove_collection_handler(deezer_id: String) -> Result<bool, HandlerError
     }
 }
 
-pub fn handler_clear_database() -> Result<bool, HandlerError> {
+pub fn handler_clear_database() -> Result<bool, DomainError> {
     match domain_clear_database() {
         Ok(_) => return Ok(true),
         Err(e) => {

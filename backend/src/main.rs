@@ -5,7 +5,7 @@ use log::info;
 mod api;
 mod common;
 mod domain;
-mod handlers;
+mod infrastructure;
 
 #[tokio::main]
 async fn main() {

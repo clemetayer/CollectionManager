@@ -1,13 +1,13 @@
 use log::info;
 use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
-use crate::handlers::{
+use crate::domain::{
     collection_dependencies::{add_collection_dependency, remove_collection_dependency},
     collection_management::{
         get_collection_with_tracks, handler_clear_database, init_collections, list_collections,
         refresh_collection_handler, remove_collection_handler, update_all_collections,
     },
-    handlers_models::InitCollection,
+    domain_models::InitCollection,
 };
 
 use super::api_models::{AddCollectionToParent, InitCollectionInput, RemoveCollectionToParent};

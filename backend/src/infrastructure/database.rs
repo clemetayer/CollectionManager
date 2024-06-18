@@ -7,12 +7,12 @@ use diesel::SqliteConnection;
 use log::error;
 use log::info;
 
-use crate::domain::domain_models::CollectionDatabase;
+use crate::infrastructure::database_models::CollectionDatabase;
 
-use super::domain_models::InitCollectionDatabase;
-use super::errors::DatabaseDomainError;
+use super::database_models::InitCollectionDatabase;
+use super::errors::DatabaseError;
 
-pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, DatabaseDomainError> {
+pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, DatabaseError> {
     info!(
         "Database : initializing collection {} to database",
         &options.url
@@ -51,7 +51,7 @@ fn create_collection(
         .execute(conn)
 }
 
-pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DatabaseDomainError> {
+pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DatabaseError> {
     info!("Database : getting collection by deezer id {}", deezer_id);
     match collections::table
         .filter(collections::deezer_id.eq(deezer_id.clone()))
@@ -70,7 +70,7 @@ pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, Database
     }
 }
 
-pub fn list_collections() -> Result<Vec<CollectionDatabase>, DatabaseDomainError> {
+pub fn list_collections() -> Result<Vec<CollectionDatabase>, DatabaseError> {
     info!("Database : listing collections");
     match load_collections(&mut get_connection()?) {
         Ok(results) => {
@@ -85,9 +85,7 @@ pub fn list_collections() -> Result<Vec<CollectionDatabase>, DatabaseDomainError
     }
 }
 
-pub fn get_collection_with_tracks(
-    deezer_id: String,
-) -> Result<CollectionDatabase, DatabaseDomainError> {
+pub fn get_collection_with_tracks(deezer_id: String) -> Result<CollectionDatabase, DatabaseError> {
     info!(
         "Database : getting collection with tracks from deezer id : {}",
         &deezer_id
@@ -113,10 +111,7 @@ pub fn get_collection_with_tracks(
     }
 }
 
-pub fn add_collection_to_parent(
-    parent_id: i32,
-    child_id: i32,
-) -> Result<bool, DatabaseDomainError> {
+pub fn add_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool, DatabaseError> {
     info!(
         "Database : adding collection {} to {}",
         &child_id, &parent_id
@@ -142,9 +137,7 @@ pub fn add_collection_to_parent(
     }
 }
 
-pub fn get_child_collections(
-    parent_id: i32,
-) -> Result<Vec<CollectionDatabase>, DatabaseDomainError> {
+pub fn get_child_collections(parent_id: i32) -> Result<Vec<CollectionDatabase>, DatabaseError> {
     info!("Database : getting child collections of {}", &parent_id);
     match collection_dependencies::table
         .inner_join(collections::table.on(collections::id.eq(collection_dependencies::child_id)))
@@ -171,10 +164,7 @@ pub fn get_child_collections(
     }
 }
 
-pub fn remove_collection_to_parent(
-    parent_id: i32,
-    child_id: i32,
-) -> Result<bool, DatabaseDomainError> {
+pub fn remove_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool, DatabaseError> {
     info!(
         "Database : removing child collection {} from {}",
         &child_id, &parent_id
@@ -198,7 +188,7 @@ pub fn remove_collection_to_parent(
     }
 }
 
-pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, DatabaseDomainError> {
+pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, DatabaseError> {
     let mut res = true;
     let connection = &mut get_connection()?;
     info!(
@@ -245,7 +235,7 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
     return Ok(res);
 }
 
-pub fn domain_clear_database() -> Result<bool, DatabaseDomainError> {
+pub fn domain_clear_database() -> Result<bool, DatabaseError> {
     info!("Database : clearing the database");
     let connection = &mut get_connection()?;
     match diesel::delete(collections::table).execute(connection) {
@@ -273,7 +263,7 @@ pub fn domain_clear_database() -> Result<bool, DatabaseDomainError> {
     return Ok(true);
 }
 
-fn get_connection() -> Result<SqliteConnection, DatabaseDomainError> {
+fn get_connection() -> Result<SqliteConnection, DatabaseError> {
     info!("Database : getting connection to database");
     match establish_connection() {
         Ok(conn) => return Ok(conn),
@@ -308,12 +298,12 @@ fn convert_collection_model_to_database(collection_model: Collection) -> Collect
     return collection_database;
 }
 
-fn log_connection_error() -> DatabaseDomainError {
+fn log_connection_error() -> DatabaseError {
     error!("Database : Error trying connect to the database");
-    return DatabaseDomainError::ConnectionError();
+    return DatabaseError::ConnectionError();
 }
 
-fn log_result_error(message: &str) -> DatabaseDomainError {
+fn log_result_error(message: &str) -> DatabaseError {
     error!("Handler : {}", message);
-    return DatabaseDomainError::ResultError();
+    return DatabaseError::ResultError();
 }
