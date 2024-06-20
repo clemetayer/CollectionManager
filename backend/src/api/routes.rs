@@ -1,43 +1,29 @@
-use log::info;
-use warp::{filters::cors::Builder, Filter, Rejection, Reply};
-
+use super::api_models::{AddCollectionToParent, InitCollectionInput, RemoveCollectionToParent};
 use crate::domain::{
     collection_dependencies::{add_collection_dependency, remove_collection_dependency},
     collection_management::{
-        get_collection_with_tracks, handler_clear_database, init_collections, list_collections,
-        refresh_collection_handler, remove_collection_handler, update_all_collections,
+        clear_data as clear_data_domain, get_collection_with_tracks, init_collections,
+        list_collections, refresh_collection_handler, remove_collection_handler,
+        update_all_collections,
     },
     domain_models::InitCollection,
 };
-
-use super::api_models::{AddCollectionToParent, InitCollectionInput, RemoveCollectionToParent};
-
-fn get_cors_config() -> Builder {
-    return warp::cors()
-        .allow_any_origin()
-        .allow_headers(vec![
-            "Access-Control-Allow-Origin",
-            "Origin",
-            "Accept",
-            "X-Requested-With",
-            "Content-Type",
-        ])
-        .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
-}
+use log::info;
+use warp::{filters::cors::Builder, Filter, Rejection, Reply};
 
 pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     init_collection()
         .or(get_collection_list())
-        .or(get_collection_by_deezer_id())
+        .or(get_collection_by_id())
         .or(add_collection_to_parent())
         .or(refresh_collection())
         .or(refresh_all_collections())
         .or(remove_collection_from_parent())
         .or(remove_collection())
-        .or(clear_database())
+        .or(clear_data())
 }
 
-// `POST /collection/init`
+// POST /collection/init
 pub fn init_collection() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / "init")
         .and(warp::post())
@@ -71,7 +57,7 @@ async fn call_init_collection(
     }
 }
 
-// `GET /collection/list`
+// GET /collection/list
 pub fn get_collection_list() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / "list")
         .and(warp::get()) // Avoids huge payloads
@@ -94,24 +80,20 @@ async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
     }
 }
 
-// GET /collection/<collection_deezer_id>
-pub fn get_collection_by_deezer_id() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone
-{
+// GET /collection/<collection_id>
+pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / String)
         .and(warp::get())
-        .and_then(call_get_collection_by_deezer_id)
+        .and_then(call_get_collection_by_id)
         .with(&get_cors_config())
 }
 
-async fn call_get_collection_by_deezer_id(deezer_id: String) -> Result<impl Reply, Rejection> {
-    info!("getting collection by deezer id {}", deezer_id.clone());
-    match get_collection_with_tracks(deezer_id.clone()).await {
+async fn call_get_collection_by_id(id: String) -> Result<impl Reply, Rejection> {
+    info!("getting collection by id {}", id.clone());
+    match get_collection_with_tracks(id.clone()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
         Err(e) => {
-            eprintln!(
-                "Error while getting the collection by deezer id {} : {:?}",
-                deezer_id, e
-            );
+            eprintln!("Error while getting the collection by id {} : {:?}", id, e);
             Err(warp::reject())
         }
     }
@@ -257,17 +239,17 @@ async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rej
     }
 }
 
-// DELETE /clear-database -- Should only be used for integration tests, or if you want a full reset of your database
-pub fn clear_database() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
-    warp::path!("clear-database")
+// DELETE /clear-data -- Should only be used for integration tests, or if you want a full reset of your data
+pub fn clear_data() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("clear-data")
         .and(warp::delete())
-        .and_then(call_clear_database)
+        .and_then(call_clear_data)
         .with(&get_cors_config())
 }
 
-async fn call_clear_database() -> Result<impl Reply, Rejection> {
-    info!("clearing database");
-    match handler_clear_database() {
+async fn call_clear_data() -> Result<impl Reply, Rejection> {
+    info!("clearing data");
+    match clear_data_domain() {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
@@ -278,4 +260,17 @@ async fn call_clear_database() -> Result<impl Reply, Rejection> {
         }
         Err(_) => Err(warp::reject()),
     }
+}
+
+fn get_cors_config() -> Builder {
+    return warp::cors()
+        .allow_any_origin()
+        .allow_headers(vec![
+            "Access-Control-Allow-Origin",
+            "Origin",
+            "Accept",
+            "X-Requested-With",
+            "Content-Type",
+        ])
+        .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
 }

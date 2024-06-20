@@ -1,4 +1,5 @@
 use crate::common::common::get_env_variable;
+use crate::infrastructure::database_converter::convert_collection_list_model_to_database;
 use crate::infrastructure::database_models::CollectionDatabase;
 use backend::models::*;
 use backend::schema::collection_dependencies;
@@ -30,24 +31,6 @@ pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, Databas
             )));
         }
     }
-}
-
-fn create_collection(
-    conn: &mut SqliteConnection,
-    name: &str,
-    deezer_id: &str,
-    url: &str,
-) -> Result<usize, diesel::result::Error> {
-    let new_collection = NewCollection {
-        name,
-        deezer_id,
-        url,
-    };
-    info!("Database : saving collection {} to database", &url);
-    diesel::insert_into(collections::table)
-        .values(&new_collection)
-        .on_conflict_do_nothing()
-        .execute(conn)
 }
 
 pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DatabaseError> {
@@ -234,7 +217,7 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
     return Ok(res);
 }
 
-pub fn domain_clear_database() -> Result<bool, DatabaseError> {
+pub fn clear_database() -> Result<bool, DatabaseError> {
     info!("Database : clearing the database");
     let connection = &mut get_connection()?;
     match diesel::delete(collections::table).execute(connection) {
@@ -262,6 +245,24 @@ pub fn domain_clear_database() -> Result<bool, DatabaseError> {
     return Ok(true);
 }
 
+fn create_collection(
+    conn: &mut SqliteConnection,
+    name: &str,
+    deezer_id: &str,
+    url: &str,
+) -> Result<usize, diesel::result::Error> {
+    let new_collection = NewCollection {
+        name,
+        deezer_id,
+        url,
+    };
+    info!("Database : saving collection {} to database", &url);
+    diesel::insert_into(collections::table)
+        .values(&new_collection)
+        .on_conflict_do_nothing()
+        .execute(conn)
+}
+
 fn establish_connection() -> Result<SqliteConnection, ConnectionError> {
     let database_url: String = get_env_variable("DATABASE_URL");
     SqliteConnection::establish(&(database_url.as_str()))
@@ -282,24 +283,6 @@ fn load_collections(
 ) -> Result<Vec<Collection>, diesel::result::Error> {
     use backend::schema::collections::dsl::*;
     collections.select(Collection::as_select()).load(connection)
-}
-
-fn convert_collection_list_model_to_database(
-    collection_model_list: Vec<Collection>,
-) -> Vec<CollectionDatabase> {
-    collection_model_list
-        .into_iter()
-        .map(|collection| convert_collection_model_to_database(collection))
-        .collect::<Vec<_>>()
-}
-
-fn convert_collection_model_to_database(collection_model: Collection) -> CollectionDatabase {
-    let collection_database = CollectionDatabase {
-        name: collection_model.name,
-        deezer_id: collection_model.deezer_id,
-        url: collection_model.url,
-    };
-    return collection_database;
 }
 
 fn log_connection_error() -> DatabaseError {

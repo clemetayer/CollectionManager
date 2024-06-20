@@ -1,10 +1,10 @@
-use super::domain_models::{Playlist, Track};
+use super::converter::convert_playlist;
+use super::domain_models::Playlist;
 use super::errors::DomainError;
 use crate::infrastructure;
-use crate::infrastructure::database::get_collection_id_by_deezer_id;
+use crate::infrastructure::database::get_collection_id_by_deezer_id as get_collection_id_by_deezer_id_database;
 use crate::infrastructure::database_models::InitCollectionDatabase;
 use crate::infrastructure::deezer::create_playlist;
-use deezer::models::{DeezerArray, PlaylistTrack};
 use log::error;
 
 pub async fn create_new_playlist(name: String) -> Result<usize, DomainError> {
@@ -95,8 +95,8 @@ pub fn get_track_id_from_url(url: String) -> u64 {
     }
 }
 
-pub fn get_collection_id_by_deezer_id_handler(deezer_id: String) -> Result<i32, DomainError> {
-    match get_collection_id_by_deezer_id(deezer_id.clone()) {
+pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DomainError> {
+    match get_collection_id_by_deezer_id_database(deezer_id.clone()) {
         Ok(id) => {
             return Ok(id);
         }
@@ -138,33 +138,4 @@ fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, DomainErro
         }
     };
     return Ok(ret_size);
-}
-
-fn convert_playlist(playlist: deezer::models::Playlist) -> Playlist {
-    return Playlist {
-        id: playlist.id,
-        title: playlist.title,
-        public: playlist.is_public,
-        nb_tracks: playlist.nb_tracks,
-        url: playlist.link,
-        tracks: convert_tracks(playlist.tracks),
-    };
-}
-
-fn convert_tracks(tracks: DeezerArray<PlaylistTrack>) -> Vec<Track> {
-    tracks
-        .data
-        .into_iter()
-        .map(|track| convert_track(track))
-        .collect::<Vec<_>>()
-}
-
-fn convert_track(track: PlaylistTrack) -> Track {
-    return Track {
-        id: track.id,
-        title: track.title,
-        link: track.link.clone(),
-        artist: track.artist.name,
-        deezer_id: format!("{}", get_track_id_from_url(track.link)),
-    };
 }

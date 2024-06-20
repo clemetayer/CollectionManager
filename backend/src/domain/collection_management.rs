@@ -1,7 +1,5 @@
-use log::error;
-
 use super::collection_commons::{
-    create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id_handler,
+    create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id,
     get_playlist_id_from_url,
 };
 use super::domain_models::{self, Collection, CollectionListElement};
@@ -12,9 +10,10 @@ use crate::domain::collection_commons::{
 };
 use crate::infrastructure;
 use crate::infrastructure::database::{
-    self, domain_clear_database, get_child_collections, remove_collection_in_database,
+    self, clear_database, get_child_collections, remove_collection_in_database,
 };
 use crate::infrastructure::deezer::add_tracks_to_playlist;
+use log::error;
 
 pub async fn init_collections(
     options: domain_models::InitCollection,
@@ -97,7 +96,7 @@ pub async fn get_collection_with_tracks(deezer_id: String) -> Result<Collection,
 fn get_direct_children_collections_without_tracks(
     deezer_id: String,
 ) -> Result<Vec<Collection>, DomainError> {
-    let parent_id = get_collection_id_by_deezer_id_handler(deezer_id)?;
+    let parent_id = get_collection_id_by_deezer_id(deezer_id)?;
     let children_collections: Vec<Collection>;
     match get_child_collections(parent_id) {
         Ok(collections) => {
@@ -130,9 +129,7 @@ pub async fn refresh_collection_handler(collection_id: String) -> Result<bool, D
         .into_iter()
         .map(|track| track.deezer_id)
         .collect::<Vec<_>>();
-    match get_child_collections(get_collection_id_by_deezer_id_handler(
-        collection_id.clone(),
-    )?) {
+    match get_child_collections(get_collection_id_by_deezer_id(collection_id.clone())?) {
         Ok(child_collections) => {
             let mut tracks_to_add: Vec<String> = Vec::new();
             for collection in child_collections.into_iter() {
@@ -180,7 +177,7 @@ pub async fn update_all_collections() -> Result<bool, DomainError> {
             }
             playlists_ids_to_update.insert(0, child_id.clone());
             // Add the next children ids
-            match get_child_collections(get_collection_id_by_deezer_id_handler(child_id.clone())?) {
+            match get_child_collections(get_collection_id_by_deezer_id(child_id.clone())?) {
                 Ok(child_collections) => {
                     for child_collection in child_collections.into_iter() {
                         if !children_ids.contains(&child_collection.deezer_id) {
@@ -220,8 +217,7 @@ fn get_max_depth() -> u64 {
 }
 
 pub fn remove_collection_handler(deezer_id: String) -> Result<bool, DomainError> {
-    match remove_collection_in_database(get_collection_id_by_deezer_id_handler(deezer_id.clone())?)
-    {
+    match remove_collection_in_database(get_collection_id_by_deezer_id(deezer_id.clone())?) {
         Ok(res) => return Ok(res),
         Err(e) => {
             return Err(log_database_error(&format!(
@@ -232,8 +228,8 @@ pub fn remove_collection_handler(deezer_id: String) -> Result<bool, DomainError>
     }
 }
 
-pub fn handler_clear_database() -> Result<bool, DomainError> {
-    match domain_clear_database() {
+pub fn clear_data() -> Result<bool, DomainError> {
+    match clear_database() {
         Ok(_) => return Ok(true),
         Err(e) => {
             return Err(log_database_error(&format!(

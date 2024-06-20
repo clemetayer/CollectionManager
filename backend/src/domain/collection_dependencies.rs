@@ -1,16 +1,17 @@
+use super::collection_commons::{
+    convert_string_to_u64, create_collection_from_playlist, get_collection_id_by_deezer_id,
+    log_database_error, log_deezer_error,
+};
 use crate::{
     domain::errors::DomainError,
     infrastructure::{
         database::{
-            add_collection_to_parent, get_collection_id_by_deezer_id, remove_collection_to_parent,
+            add_collection_to_parent,
+            get_collection_id_by_deezer_id as get_collection_id_by_deezer_id_database,
+            remove_collection_to_parent,
         },
         errors::DatabaseError,
     },
-};
-
-use super::collection_commons::{
-    convert_string_to_u64, create_collection_from_playlist, get_collection_id_by_deezer_id_handler,
-    log_database_error, log_deezer_error,
 };
 
 pub async fn add_collection_dependency(
@@ -27,8 +28,8 @@ fn add_collection_dependency_to_database(
     parent_deezer_id: String,
     child_deezer_id: String,
 ) -> Result<bool, DomainError> {
-    let parent_id = get_collection_id_by_deezer_id_handler(parent_deezer_id)?;
-    let child_id = get_collection_id_by_deezer_id_handler(child_deezer_id)?;
+    let parent_id = get_collection_id_by_deezer_id(parent_deezer_id)?;
+    let child_id = get_collection_id_by_deezer_id(child_deezer_id)?;
     match add_collection_to_parent(parent_id, child_id) {
         Ok(_) => {}
         Err(e) => {
@@ -42,7 +43,7 @@ fn add_collection_dependency_to_database(
 }
 
 async fn add_collection_if_not_in_database(deezer_id: String) -> Result<bool, DomainError> {
-    match get_collection_id_by_deezer_id(deezer_id.clone()) {
+    match get_collection_id_by_deezer_id_database(deezer_id.clone()) {
         Ok(_) => {
             return Ok(true);
         } // Collection already exists, non need to add it
@@ -71,8 +72,8 @@ pub fn remove_collection_dependency(
     parent_deezer_id: String,
     child_deezer_id: String,
 ) -> Result<bool, DomainError> {
-    let parent_id = get_collection_id_by_deezer_id_handler(parent_deezer_id.clone())?;
-    let child_id = get_collection_id_by_deezer_id_handler(child_deezer_id.clone())?;
+    let parent_id = get_collection_id_by_deezer_id(parent_deezer_id.clone())?;
+    let child_id = get_collection_id_by_deezer_id(child_deezer_id.clone())?;
     match remove_collection_to_parent(parent_id, child_id) {
         Ok(value) => return Ok(value),
         Err(e) => {
