@@ -89,8 +89,8 @@ pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejec
 }
 
 async fn call_get_collection_by_id(id: String) -> Result<impl Reply, Rejection> {
-    info!("getting collection by id {}", id.clone());
-    match get_collection_with_tracks(id.clone()).await {
+    info!("getting collection by id {}", id);
+    match get_collection_with_tracks(id.as_str()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
         Err(e) => {
             eprintln!("Error while getting the collection by id {} : {:?}", id, e);
@@ -118,8 +118,8 @@ async fn call_add_collection_to_parent(
         &add_collection_to_parent_input.parent_collection_id
     );
     match add_collection_dependency(
-        add_collection_to_parent_input.parent_collection_id,
-        add_collection_to_parent_input.child_collection_id,
+        add_collection_to_parent_input.parent_collection_id.as_str(),
+        add_collection_to_parent_input.child_collection_id.as_str(),
     )
     .await
     {
@@ -145,7 +145,7 @@ pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejecti
 
 async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Rejection> {
     info!("refreshing collection {}", collection_id);
-    match refresh_collection_handler(collection_id).await {
+    match refresh_collection_handler(collection_id.as_str()).await {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
@@ -201,8 +201,12 @@ async fn call_remove_collection_to_parent(
         remove_collection_to_parent_input.parent_collection_id
     );
     match remove_collection_dependency(
-        remove_collection_to_parent_input.parent_collection_id,
-        remove_collection_to_parent_input.child_collection_id,
+        remove_collection_to_parent_input
+            .parent_collection_id
+            .as_str(),
+        remove_collection_to_parent_input
+            .child_collection_id
+            .as_str(),
     ) {
         Ok(_) => {
             let reply = warp::reply();
@@ -226,7 +230,7 @@ pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejectio
 
 async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rejection> {
     info!("removing collection {}", collection_id);
-    match remove_collection_handler(collection_id) {
+    match remove_collection_handler(collection_id.as_str()) {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(

@@ -22,7 +22,7 @@ fn get_token() -> String {
     return get_env_variable("DEEZER_API_TOKEN");
 }
 
-pub async fn create_playlist(name: String) -> Result<u64, Error> {
+pub async fn create_playlist(name: &str) -> Result<u64, Error> {
     let mut url: String = format!(
         "{}/{}/{}/{}?{}",
         get_deezer_api_path(),
@@ -55,7 +55,7 @@ pub async fn create_playlist(name: String) -> Result<u64, Error> {
     }
 }
 
-pub async fn get_playlist(deezer_playlist_id: u64) -> Result<Playlist, Error> {
+pub async fn get_playlist(deezer_playlist_id: &u64) -> Result<Playlist, Error> {
     let mut url: String = format!(
         "{}/{}/{}",
         get_deezer_api_path(),
@@ -84,7 +84,7 @@ pub async fn get_playlist(deezer_playlist_id: u64) -> Result<Playlist, Error> {
 }
 
 pub async fn add_tracks_to_playlist(
-    playlist_id: String,
+    playlist_id: &str,
     track_ids: Vec<String>,
 ) -> Result<bool, Error> {
     if track_ids.len() > 0 {
@@ -97,7 +97,7 @@ pub async fn add_tracks_to_playlist(
             "{}/{}/{}/{}?{}",
             get_deezer_api_path(),
             PATH_PLAYLIST,
-            playlist_id.clone(),
+            playlist_id,
             PATH_TRACKS,
             format!("songs={}", track_ids_query_params)
         );
@@ -114,7 +114,7 @@ pub async fn add_tracks_to_playlist(
                     "Error querying {}/{}/{}/{}?{} : {}",
                     get_deezer_api_path(),
                     PATH_PLAYLIST,
-                    playlist_id.clone(),
+                    playlist_id,
                     PATH_TRACKS,
                     format!(
                         "access_token={}&songs={}",

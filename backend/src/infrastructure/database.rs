@@ -15,13 +15,13 @@ use super::errors::DatabaseError;
 pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, DatabaseError> {
     info!(
         "Database : initializing collection {} to database",
-        &options.url
+        options.url.as_str()
     );
     match create_collection(
         &mut get_connection()?,
-        &options.name,
-        &options.deezer_id,
-        &options.url,
+        options.name.as_str(),
+        options.deezer_id.as_str(),
+        options.url.as_str(),
     ) {
         Ok(res_size) => Ok(res_size),
         Err(e) => {
@@ -33,10 +33,10 @@ pub fn init_collection(options: InitCollectionDatabase) -> Result<usize, Databas
     }
 }
 
-pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DatabaseError> {
+pub fn get_collection_id_by_deezer_id(deezer_id: &str) -> Result<i32, DatabaseError> {
     info!("Database : getting collection by deezer id {}", deezer_id);
     match collections::table
-        .filter(collections::deezer_id.eq(deezer_id.clone()))
+        .filter(collections::deezer_id.eq(deezer_id))
         .select(Collection::as_select())
         .get_result(&mut get_connection()?)
     {
@@ -67,13 +67,13 @@ pub fn list_collections() -> Result<Vec<CollectionDatabase>, DatabaseError> {
     }
 }
 
-pub fn get_collection_with_tracks(deezer_id: String) -> Result<CollectionDatabase, DatabaseError> {
+pub fn get_collection_with_tracks(deezer_id: &str) -> Result<CollectionDatabase, DatabaseError> {
     info!(
         "Database : getting collection with tracks from deezer id : {}",
-        &deezer_id
+        deezer_id
     );
     match collections::table
-        .filter(collections::deezer_id.eq(deezer_id.clone()))
+        .filter(collections::deezer_id.eq(deezer_id))
         .select(Collection::as_select())
         .get_result(&mut get_connection()?)
     {
@@ -93,14 +93,11 @@ pub fn get_collection_with_tracks(deezer_id: String) -> Result<CollectionDatabas
     }
 }
 
-pub fn add_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool, DatabaseError> {
-    info!(
-        "Database : adding collection {} to {}",
-        &child_id, &parent_id
-    );
+pub fn add_collection_to_parent(parent_id: &i32, child_id: &i32) -> Result<bool, DatabaseError> {
+    info!("Database : adding collection {} to {}", child_id, parent_id);
     let collection_dependency = NewCollectionDependency {
-        parent_id: &parent_id,
-        child_id: &child_id,
+        parent_id: parent_id,
+        child_id: child_id,
     };
     match diesel::insert_into(collection_dependencies::table)
         .values(&collection_dependency)
@@ -113,14 +110,14 @@ pub fn add_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool, D
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error adding collection dependency : child id {} to parent id {}: {:?}",
-                &child_id, &parent_id, e
+                child_id, parent_id, e
             )));
         }
     }
 }
 
-pub fn get_child_collections(parent_id: i32) -> Result<Vec<CollectionDatabase>, DatabaseError> {
-    info!("Database : getting child collections of {}", &parent_id);
+pub fn get_child_collections(parent_id: &i32) -> Result<Vec<CollectionDatabase>, DatabaseError> {
+    info!("Database : getting child collections of {}", parent_id);
     match collection_dependencies::table
         .inner_join(collections::table.on(collections::id.eq(collection_dependencies::child_id)))
         .filter(collection_dependencies::parent_id.eq(parent_id))
@@ -140,16 +137,16 @@ pub fn get_child_collections(parent_id: i32) -> Result<Vec<CollectionDatabase>, 
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error getting child collections of {} : {:?}",
-                &parent_id, e
+                parent_id, e
             )));
         }
     }
 }
 
-pub fn remove_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool, DatabaseError> {
+pub fn remove_collection_to_parent(parent_id: &i32, child_id: &i32) -> Result<bool, DatabaseError> {
     info!(
         "Database : removing child collection {} from {}",
-        &child_id, &parent_id
+        child_id, parent_id
     );
     match diesel::delete(
         collection_dependencies::table.filter(
@@ -164,18 +161,18 @@ pub fn remove_collection_to_parent(parent_id: i32, child_id: i32) -> Result<bool
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error removing child collection {} from {} : {:?}",
-                &child_id, &parent_id, e
+                child_id, parent_id, e
             )));
         }
     }
 }
 
-pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, DatabaseError> {
+pub fn remove_collection_in_database(collection_id: &i32) -> Result<bool, DatabaseError> {
     let mut res = true;
     let connection = &mut get_connection()?;
     info!(
         "Database : removing collection {} from the database",
-        &collection_id
+        collection_id
     );
     match diesel::delete(
         collection_dependencies::table.filter(collection_dependencies::parent_id.eq(collection_id)),
@@ -186,7 +183,7 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error removing collection dependencies of {} from the database {:?}",
-                &collection_id, e,
+                collection_id, e,
             )));
         }
     };
@@ -199,7 +196,7 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error removing collection dependencies of {} from the database {:?}",
-                &collection_id, e,
+                collection_id, e,
             )));
         }
     };
@@ -210,7 +207,7 @@ pub fn remove_collection_in_database(collection_id: i32) -> Result<bool, Databas
         Err(e) => {
             return Err(log_result_error(&format!(
                 "Error removing collection {} from the database {:?}",
-                &collection_id, e
+                collection_id, e
             )));
         }
     };

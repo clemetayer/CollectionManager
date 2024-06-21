@@ -7,12 +7,12 @@ use crate::infrastructure::database_models::InitCollectionDatabase;
 use crate::infrastructure::deezer::create_playlist;
 use log::error;
 
-pub async fn create_new_playlist(name: String) -> Result<usize, DomainError> {
+pub async fn create_new_playlist(name: &str) -> Result<usize, DomainError> {
     let ret_size: usize;
-    match create_playlist(name.clone()).await {
+    match create_playlist(name).await {
         Ok(id) => {
             let database_collection = InitCollectionDatabase {
-                name: name.clone(),
+                name: name.to_string(),
                 url: format!("https://www.deezer.com/fr/playlist/{}", id),
                 deezer_id: format!("{}", id),
             };
@@ -23,7 +23,7 @@ pub async fn create_new_playlist(name: String) -> Result<usize, DomainError> {
                 Err(e) => {
                     return Err(log_database_error(&format!(
                         "Error while initializing a collection {} in the database : {:?}",
-                        &name, e
+                        name, e
                     )));
                 }
             };
@@ -31,36 +31,36 @@ pub async fn create_new_playlist(name: String) -> Result<usize, DomainError> {
         Err(e) => {
             return Err(log_deezer_error(&format!(
                 "Error creating playlist {} : {:?}",
-                &name, e
+                name, e
             )));
         }
     }
     return Ok(ret_size);
 }
 
-pub async fn create_collection_from_playlist(playlist_id: u64) -> Result<usize, DomainError> {
+pub async fn create_collection_from_playlist(playlist_id: &u64) -> Result<usize, DomainError> {
     let ret_size: usize;
     match get_playlist(playlist_id).await {
         Ok(playlist) => {
-            ret_size = add_playlist_data_to_database(playlist.clone())?;
+            ret_size = add_playlist_data_to_database(playlist)?;
         }
         Err(e) => {
             return Err(log_deezer_error(&format!(
                 "Error getting playlist {} : {:?}",
-                &playlist_id, e
+                playlist_id, e
             )));
         }
     }
     return Ok(ret_size);
 }
 
-pub async fn get_playlist(playlist_id: u64) -> Result<Playlist, DomainError> {
+pub async fn get_playlist(playlist_id: &u64) -> Result<Playlist, DomainError> {
     match infrastructure::deezer::get_playlist(playlist_id).await {
         Ok(playlist) => Ok(convert_playlist(playlist)),
         Err(e) => {
             return Err(log_deezer_error(&format!(
                 "Error getting playlist {} : {:?}",
-                &playlist_id, e
+                playlist_id, e
             )))
         }
     }
@@ -71,7 +71,7 @@ pub fn get_playlist_id_from_url(url: String) -> u64 {
     return convert_string_to_u64(id_str.last().unwrap());
 }
 
-pub fn convert_string_to_u64(id: &&str) -> u64 {
+pub fn convert_string_to_u64(id: &str) -> u64 {
     match id.parse::<u64>() {
         Ok(id) => return id,
         Err(e) => {
@@ -95,15 +95,15 @@ pub fn get_track_id_from_url(url: String) -> u64 {
     }
 }
 
-pub fn get_collection_id_by_deezer_id(deezer_id: String) -> Result<i32, DomainError> {
-    match get_collection_id_by_deezer_id_database(deezer_id.clone()) {
+pub fn get_collection_id_by_deezer_id(deezer_id: &str) -> Result<i32, DomainError> {
+    match get_collection_id_by_deezer_id_database(deezer_id) {
         Ok(id) => {
             return Ok(id);
         }
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while getting collection id {} : {:?}",
-                &deezer_id, e
+                deezer_id, e
             )));
         }
     };
@@ -133,7 +133,7 @@ fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, DomainErro
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while initializing the collection {} in the database : {:?}",
-                &playlist.url, e
+                playlist.url, e
             )));
         }
     };
