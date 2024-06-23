@@ -37,6 +37,4 @@ pub struct Collection {
     pub name: String,
     pub deezer_id: String,
     pub url: String,
-    pub tracks: Vec<Track>,
-    pub children_col: Vec<Collection>,
 }

@@ -67,7 +67,7 @@ pub fn list_collections() -> Result<Vec<CollectionDatabase>, DatabaseError> {
     }
 }
 
-pub fn get_collection_with_tracks(deezer_id: &str) -> Result<CollectionDatabase, DatabaseError> {
+pub fn get_collection(deezer_id: &str) -> Result<CollectionDatabase, DatabaseError> {
     info!(
         "Database : getting collection with tracks from deezer id : {}",
         deezer_id

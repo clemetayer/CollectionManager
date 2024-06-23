@@ -2,17 +2,17 @@ use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id,
     get_playlist_id_from_url,
 };
-use super::domain_models::{self, Collection, CollectionListElement};
+use super::domain_models::{self, Collection, CollectionListElement, Track};
 use super::errors::DomainError;
 use crate::common::common::get_env_variable;
 use crate::domain::collection_commons::{
     convert_string_to_u64, get_playlist, log_database_error, log_deezer_error,
 };
-use crate::infrastructure;
 use crate::infrastructure::database::{
-    self, clear_database, get_child_collections, remove_collection_in_database,
+    clear_database, get_child_collections, remove_collection_in_database,
 };
 use crate::infrastructure::deezer::add_tracks_to_playlist;
+use crate::infrastructure::{self, database};
 use log::error;
 
 pub async fn init_collections(
@@ -54,46 +54,30 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, DomainError> {
     }
 }
 
-pub async fn get_collection_with_tracks(deezer_id: &str) -> Result<Collection, DomainError> {
-    match database::get_collection_with_tracks(deezer_id) {
-        Ok(collection) => {
-            let playlist = get_playlist(&convert_string_to_u64(deezer_id)).await?;
-            let children_collections = get_direct_children_collections_without_tracks(deezer_id)?;
-            let mut tracks = playlist.tracks;
-            for children_col in children_collections.clone().into_iter() {
-                let playlist =
-                    get_playlist(&convert_string_to_u64(children_col.deezer_id.as_str())).await?;
-                for track in playlist.tracks.into_iter() {
-                    let track_index = tracks
-                        .clone()
-                        .into_iter()
-                        .position(|el| el.deezer_id == track.deezer_id);
-                    if track_index.is_some() {
-                        tracks.remove(track_index.unwrap());
-                    }
-                }
+pub async fn get_collection_tracks_excluding_children(
+    deezer_id: &str,
+) -> Result<Vec<Track>, DomainError> {
+    let playlist = get_playlist(&convert_string_to_u64(deezer_id)).await?;
+    let children_collections = get_direct_children_collections(deezer_id)?;
+    let mut tracks = playlist.tracks;
+    for children_col in children_collections.clone().into_iter() {
+        let playlist =
+            get_playlist(&convert_string_to_u64(children_col.deezer_id.as_str())).await?;
+        for track in playlist.tracks.into_iter() {
+            let track_index = tracks
+                .clone()
+                .into_iter()
+                .position(|el| el.deezer_id == track.deezer_id);
+            if track_index.is_some() {
+                tracks.remove(track_index.unwrap());
             }
-            return Ok(Collection {
-                name: collection.name,
-                deezer_id: collection.deezer_id,
-                url: collection.url,
-                tracks: tracks,
-                children_col: children_collections,
-            });
-        }
-        Err(e) => {
-            return Err(log_database_error(&format!(
-                "Error while getting the collection with tracks that has deezer id {} : {:?}",
-                deezer_id, e
-            )));
         }
     }
+    return Ok(tracks);
 }
 
 // will return the basic children collections (no tracks or other children collections)
-fn get_direct_children_collections_without_tracks(
-    deezer_id: &str,
-) -> Result<Vec<Collection>, DomainError> {
+pub fn get_direct_children_collections(deezer_id: &str) -> Result<Vec<Collection>, DomainError> {
     let parent_id = get_collection_id_by_deezer_id(deezer_id)?;
     let children_collections: Vec<Collection>;
     match get_child_collections(&parent_id) {
@@ -104,8 +88,6 @@ fn get_direct_children_collections_without_tracks(
                     name: collection.name,
                     deezer_id: collection.deezer_id,
                     url: collection.url,
-                    tracks: Vec::new(),
-                    children_col: Vec::new(),
                 })
                 .collect::<Vec<_>>();
         }
@@ -117,6 +99,24 @@ fn get_direct_children_collections_without_tracks(
         }
     }
     return Ok(children_collections);
+}
+
+pub async fn get_collection(deezer_id: &str) -> Result<Collection, DomainError> {
+    match database::get_collection(deezer_id) {
+        Ok(collection) => {
+            return Ok(Collection {
+                name: collection.name,
+                deezer_id: collection.deezer_id,
+                url: collection.url,
+            });
+        }
+        Err(e) => {
+            return Err(log_database_error(&format!(
+                "Error while getting the collection {} : {:?}",
+                deezer_id, e
+            )));
+        }
+    }
 }
 
 pub async fn refresh_collection_handler(collection_id: &str) -> Result<bool, DomainError> {

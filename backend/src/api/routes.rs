@@ -2,8 +2,10 @@ use super::api_models::{AddCollectionToParent, InitCollectionInput, RemoveCollec
 use crate::domain::{
     collection_dependencies::{add_collection_dependency, remove_collection_dependency},
     collection_management::{
-        clear_data as clear_data_domain, get_collection_with_tracks, init_collections,
-        list_collections, refresh_collection_handler, remove_collection_handler,
+        clear_data as clear_data_domain, get_collection,
+        get_collection_tracks_excluding_children as get_collection_tracks_excluding_children_domain,
+        get_direct_children_collections as get_direct_children_collections_domain,
+        init_collections, list_collections, refresh_collection_handler, remove_collection_handler,
         update_all_collections,
     },
     domain_models::InitCollection,
@@ -20,6 +22,8 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         .or(refresh_all_collections())
         .or(remove_collection_from_parent())
         .or(remove_collection())
+        .or(get_collection_tracks_excluding_children())
+        .or(get_direct_children_collections())
         .or(clear_data())
 }
 
@@ -80,6 +84,25 @@ async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
     }
 }
 
+// GET /collection/tracks/<collection-id>
+pub fn get_collection_tracks_excluding_children(
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection" / "tracks" / String)
+        .and(warp::get())
+        .and_then(call_get_collection_tracks_excluding_children)
+        .with(&get_cors_config())
+}
+
+async fn call_get_collection_tracks_excluding_children(
+    id: String,
+) -> Result<impl Reply, Rejection> {
+    info!("getting tracks from collection {}", id);
+    match get_collection_tracks_excluding_children_domain(id.as_str()).await {
+        Ok(tracks) => Ok(warp::reply::json(&tracks).into_response()),
+        Err(_) => Err(warp::reject()),
+    }
+}
+
 // GET /collection/<collection_id>
 pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / String)
@@ -90,12 +113,26 @@ pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejec
 
 async fn call_get_collection_by_id(id: String) -> Result<impl Reply, Rejection> {
     info!("getting collection by id {}", id);
-    match get_collection_with_tracks(id.as_str()).await {
+    match get_collection(id.as_str()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
-        Err(e) => {
-            eprintln!("Error while getting the collection by id {} : {:?}", id, e);
-            Err(warp::reject())
-        }
+        Err(_) => Err(warp::reject()),
+    }
+}
+
+// GET /collection-management/children/<collection-id>
+pub fn get_direct_children_collections(
+) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
+    warp::path!("collection-management" / "children" / String)
+        .and(warp::get())
+        .and_then(call_get_direct_children_collections)
+        .with(&get_cors_config())
+}
+
+async fn call_get_direct_children_collections(id: String) -> Result<impl Reply, Rejection> {
+    info!("getting children collections of id {}", id);
+    match get_direct_children_collections_domain(id.as_str()) {
+        Ok(collections) => Ok(warp::reply::json(&collections).into_response()),
+        Err(_) => Err(warp::reject()),
     }
 }
 

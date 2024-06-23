@@ -10,7 +10,7 @@
 			"name": "IntegrationTestSuite - standard usage",
 			"item": [
 				{
-					"name": "clear database",
+					"name": "clear data",
 					"event": [
 						{
 							"listen": "test",
@@ -29,14 +29,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/clear-database",
+							"raw": "http://localhost:8000/clear-data",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"clear-database"
+								"clear-data"
 							]
 						}
 					},
@@ -178,7 +178,7 @@
 					"response": []
 				},
 				{
-					"name": "get collection by deezer id 1",
+					"name": "get collection by id 1",
 					"event": [
 						{
 							"listen": "test",
@@ -192,24 +192,7 @@
 									"    const expected_body = {",
 									"        \"name\": \"test_playlist_1\",",
 									"        \"deezer_id\": \"123456\",",
-									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
-									"        \"tracks\": [",
-									"            {",
-									"                \"id\": 1,",
-									"                \"deezer_id\": \"1\",",
-									"                \"title\": \"test_track_1\",",
-									"                \"link\": \"https://www.deezer.com/track/1\",",
-									"                \"artist\": \"test_artist_1\"",
-									"            },",
-									"            {",
-									"                \"id\": 2,",
-									"                \"deezer_id\": \"2\",",
-									"                \"title\": \"test_track_2\",",
-									"                \"link\": \"https://www.deezer.com/track/2\",",
-									"                \"artist\": \"test_artist_2\"",
-									"            }",
-									"        ],",
-									"        \"children_col\": []",
+									"        \"url\": \"https://www.deezer.com/playlist/123456\"",
 									"    }",
 									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
 									"});"
@@ -237,7 +220,100 @@
 					"response": []
 				},
 				{
-					"name": "get collection by deezer id 2",
+					"name": "get collection tracks by id 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = [",
+									"        {",
+									"            \"id\": 1,",
+									"            \"deezer_id\": \"1\",",
+									"            \"title\": \"test_track_1\",",
+									"            \"link\": \"https://www.deezer.com/track/1\",",
+									"            \"artist\": \"test_artist_1\"",
+									"        },",
+									"        {",
+									"            \"id\": 2,",
+									"            \"deezer_id\": \"2\",",
+									"            \"title\": \"test_track_2\",",
+									"            \"link\": \"https://www.deezer.com/track/2\",",
+									"            \"artist\": \"test_artist_2\"",
+									"        }",
+									"    ]",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/tracks/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"tracks",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection children by id 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = []",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection-management/children/123456",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"children",
+								"123456"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection by id 2",
 					"event": [
 						{
 							"listen": "test",
@@ -251,17 +327,7 @@
 									"    const expected_body = {",
 									"        \"name\": \"test_new\",",
 									"        \"deezer_id\": \"456789\",",
-									"        \"url\": \"https://www.deezer.com/fr/playlist/456789\",",
-									"        \"tracks\": [",
-									"            {",
-									"                \"id\": 3,",
-									"                \"deezer_id\": \"3\",",
-									"                \"title\": \"test_track_3\",",
-									"                \"link\": \"https://www.deezer.com/track/3\",",
-									"                \"artist\": \"test_artist_1\"",
-									"            }",
-									"        ],",
-									"        \"children_col\": []",
+									"        \"url\": \"https://www.deezer.com/fr/playlist/456789\"",
 									"    }",
 									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
 									"});"
@@ -282,6 +348,92 @@
 							"port": "8000",
 							"path": [
 								"collection",
+								"456789"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection tracks by id 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = [",
+									"        {",
+									"            \"id\": 3,",
+									"            \"deezer_id\": \"3\",",
+									"            \"title\": \"test_track_3\",",
+									"            \"link\": \"https://www.deezer.com/track/3\",",
+									"            \"artist\": \"test_artist_1\"",
+									"        }",
+									"    ]",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection/tracks/456789",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection",
+								"tracks",
+								"456789"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get collection children by id 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"Response body is correct\", function() {",
+									"    const expected_body = []",
+									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8000/collection-management/children/456789",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8000",
+							"path": [
+								"collection-management",
+								"children",
 								"456789"
 							]
 						}
@@ -332,7 +484,7 @@
 					"response": []
 				},
 				{
-					"name": "get collection by deezer id 1 - collection dependency",
+					"name": "get collection children by id 1",
 					"event": [
 						{
 							"listen": "test",
@@ -343,36 +495,13 @@
 									"});",
 									"",
 									"pm.test(\"Response body is correct\", function() {",
-									"    const expected_body = {",
-									"        \"name\": \"test_playlist_1\",",
-									"        \"deezer_id\": \"123456\",",
-									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
-									"        \"tracks\": [",
-									"            {",
-									"                \"id\": 1,",
-									"                \"deezer_id\": \"1\",",
-									"                \"title\": \"test_track_1\",",
-									"                \"link\": \"https://www.deezer.com/track/1\",",
-									"                \"artist\": \"test_artist_1\"",
-									"            },",
-									"            {",
-									"                \"id\": 2,",
-									"                \"deezer_id\": \"2\",",
-									"                \"title\": \"test_track_2\",",
-									"                \"link\": \"https://www.deezer.com/track/2\",",
-									"                \"artist\": \"test_artist_2\"",
-									"            }",
-									"        ],",
-									"        \"children_col\": [",
-									"            {",
-									"                \"name\": \"test_new\",",
-									"                \"deezer_id\": \"456789\",",
-									"                \"url\": \"https://www.deezer.com/fr/playlist/456789\",",
-									"                \"tracks\": [],",
-									"                \"children_col\": []",
-									"            }",
-									"        ]",
-									"    }",
+									"    const expected_body = [",
+									"        {",
+									"            \"name\": \"test_new\",",
+									"            \"deezer_id\": \"456789\",",
+									"            \"url\": \"https://www.deezer.com/fr/playlist/456789\"",
+									"        }",
+									"    ]",
 									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
 									"});"
 								],
@@ -384,14 +513,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/collection/123456",
+							"raw": "http://localhost:8000/collection-management/children/123456",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"collection",
+								"collection-management",
+								"children",
 								"123456"
 							]
 						}
@@ -508,7 +638,7 @@
 					"response": []
 				},
 				{
-					"name": "get collection by deezer id 1",
+					"name": "get collection children by id 1",
 					"event": [
 						{
 							"listen": "test",
@@ -519,28 +649,7 @@
 									"});",
 									"",
 									"pm.test(\"Response body is correct\", function() {",
-									"    const expected_body = {",
-									"        \"name\": \"test_playlist_1\",",
-									"        \"deezer_id\": \"123456\",",
-									"        \"url\": \"https://www.deezer.com/playlist/123456\",",
-									"        \"tracks\": [",
-									"            {",
-									"                \"id\": 1,",
-									"                \"deezer_id\": \"1\",",
-									"                \"title\": \"test_track_1\",",
-									"                \"link\": \"https://www.deezer.com/track/1\",",
-									"                \"artist\": \"test_artist_1\"",
-									"            },",
-									"            {",
-									"                \"id\": 2,",
-									"                \"deezer_id\": \"2\",",
-									"                \"title\": \"test_track_2\",",
-									"                \"link\": \"https://www.deezer.com/track/2\",",
-									"                \"artist\": \"test_artist_2\"",
-									"            }",
-									"        ],",
-									"        \"children_col\": []",
-									"    }",
+									"    const expected_body = []",
 									"    pm.expect(pm.response.json()).to.deep.eq(expected_body);",
 									"});"
 								],
@@ -552,14 +661,15 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/collection/123456",
+							"raw": "http://localhost:8000/collection-management/children/123456",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"collection",
+								"collection-management",
+								"children",
 								"123456"
 							]
 						}
@@ -653,7 +763,7 @@
 					"response": []
 				},
 				{
-					"name": "clear database",
+					"name": "clear data",
 					"event": [
 						{
 							"listen": "test",
@@ -672,14 +782,14 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8000/clear-database",
+							"raw": "http://localhost:8000/clear-data",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "8000",
 							"path": [
-								"clear-database"
+								"clear-data"
 							]
 						}
 					},
