@@ -1,9 +1,7 @@
 export type Collection = {
     name: string,
     deezer_id: string,
-    url: string,
-    tracks : Track[],
-    children_col: Collection[]
+    url: string
 }
 
 export type Track = {

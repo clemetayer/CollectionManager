@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { ConstantsAPI } from './constantsAPI';
-import type { Collection, PostAddCollectionToParent } from '@/models/collection.model';
+import type { Collection, PostAddCollectionToParent, Track } from '@/models/collection.model';
 
 export class CollectionService {
 
@@ -47,9 +47,32 @@ export class CollectionService {
             return { // Default return to not crash the entire page
                 name: "",
                 deezer_id: deezer_id,
-                url: "",
-                tracks : []
+                url: ""
             }
+        })
+    }
+
+    async getCollectionTracks(deezer_id: string) : Promise<Track[]> {
+        return this.axiosInstance.get<Track[]>(ConstantsAPI.PATH_TRACKS + deezer_id)
+        .then((response) => {
+            console.log("response getting tracks : " + response);
+            return response.data;
+        })
+        .catch(error => {
+            console.error('error getting tracks :', error);
+            return [] // Default return to not crash the entire page
+        })
+    }
+
+    async getChildrenCollections(deezer_id: string) : Promise<Collection[]> {
+        return this.axiosInstance.get<Collection[]>(ConstantsAPI.PATH_CHILDREN_COLLECTIONS + deezer_id)
+        .then((response) => {
+            console.log("response getting children collections : " + response);
+            return response.data;
+        })
+        .catch(error => {
+            console.error('error getting chidlren collections :', error);
+            return [] // Default return to not crash the entire page
         })
     }
 

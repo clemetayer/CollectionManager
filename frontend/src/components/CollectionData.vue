@@ -1,6 +1,6 @@
 <script lang="ts">
     import { defineComponent } from 'vue';
-    import type {Collection} from '../models/collection.model';
+    import type {Collection, Track} from '../models/collection.model';
     import { CollectionService } from '../service/collection.service';
     import { type SelectOption } from "../models/balmui.model"
 
@@ -13,6 +13,8 @@
             return {
                 selectedCollection: "",
                 collection: {} as Collection,
+                childrenCollections: [] as Collection[],
+                tracks: [] as Track[],
                 openAddChildCollectionDialog: false,
                 openRemoveCollectionDialog: false,
                 openRemoveChildCollectionDialog: false,
@@ -28,6 +30,12 @@
                 console.log("displaying collections from id : " + collectionId);
                 collectionService.getCollection(collectionId).then(collectionRes => {
                     this.collection = collectionRes;
+                });
+                collectionService.getChildrenCollections(collectionId).then(childrenCol => {
+                    this.childrenCollections = childrenCol;
+                });
+                collectionService.getCollectionTracks(collectionId).then(tracksRes => {
+                    this.tracks = tracksRes;
                 });
             },
             updateCollection() : void {
@@ -88,7 +96,7 @@
             <ui-grid-cell></ui-grid-cell>
             <ui-grid-cell>
                 <ui-list>
-                    <ui-item v-for="childCol in collection.children_col" :key="childCol">
+                    <ui-item v-for="childCol in childrenCollections" :key="childCol">
                         <ui-item-first-content>
                             <ui-icon>queue_music</ui-icon>
                         </ui-item-first-content>
@@ -103,7 +111,7 @@
                     </ui-item>
                 </ui-list>
                 <ui-list>
-                    <ui-item v-for="track in collection.tracks" :key="track">
+                    <ui-item v-for="track in tracks" :key="track">
                         <ui-item-first-content>
                             <ui-icon>music_note</ui-icon>
                         </ui-item-first-content>
