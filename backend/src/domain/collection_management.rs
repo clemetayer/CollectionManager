@@ -15,9 +15,7 @@ use crate::infrastructure::deezer::add_tracks_to_playlist;
 use crate::infrastructure::{self, database};
 use log::error;
 
-pub async fn init_collections(
-    options: domain_models::InitCollection,
-) -> Result<usize, DomainError> {
+pub async fn init_collections(options: domain_models::InitCollection) -> Result<bool, DomainError> {
     // if from playlist, fill the collection with the playlist track
     match options.from_playlist {
         Some(url) => {

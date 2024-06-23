@@ -7,8 +7,7 @@ use crate::infrastructure::database_models::InitCollectionDatabase;
 use crate::infrastructure::deezer::create_playlist;
 use log::error;
 
-pub async fn create_new_playlist(name: &str) -> Result<usize, DomainError> {
-    let ret_size: usize;
+pub async fn create_new_playlist(name: &str) -> Result<bool, DomainError> {
     match create_playlist(name).await {
         Ok(id) => {
             let database_collection = InitCollectionDatabase {
@@ -17,9 +16,7 @@ pub async fn create_new_playlist(name: &str) -> Result<usize, DomainError> {
                 deezer_id: format!("{}", id),
             };
             match infrastructure::database::init_collection(database_collection) {
-                Ok(size) => {
-                    ret_size = size;
-                }
+                Ok(_) => {}
                 Err(e) => {
                     return Err(log_database_error(&format!(
                         "Error while initializing a collection {} in the database : {:?}",
@@ -35,14 +32,13 @@ pub async fn create_new_playlist(name: &str) -> Result<usize, DomainError> {
             )));
         }
     }
-    return Ok(ret_size);
+    return Ok(true);
 }
 
-pub async fn create_collection_from_playlist(playlist_id: &u64) -> Result<usize, DomainError> {
-    let ret_size: usize;
+pub async fn create_collection_from_playlist(playlist_id: &u64) -> Result<bool, DomainError> {
     match get_playlist(playlist_id).await {
         Ok(playlist) => {
-            ret_size = add_playlist_data_to_database(playlist)?;
+            add_playlist_data_to_database(playlist)?;
         }
         Err(e) => {
             return Err(log_deezer_error(&format!(
@@ -51,7 +47,7 @@ pub async fn create_collection_from_playlist(playlist_id: &u64) -> Result<usize,
             )));
         }
     }
-    return Ok(ret_size);
+    return Ok(true);
 }
 
 pub async fn get_playlist(playlist_id: &u64) -> Result<Playlist, DomainError> {
@@ -119,17 +115,14 @@ pub fn log_deezer_error(message: &str) -> DomainError {
     return DomainError::DomainMusicServiceError();
 }
 
-fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, DomainError> {
-    let ret_size: usize;
+fn add_playlist_data_to_database(playlist: Playlist) -> Result<bool, DomainError> {
     let database_collection = InitCollectionDatabase {
         name: playlist.title,
         url: playlist.url.clone(),
         deezer_id: playlist.id.to_string(),
     };
     match infrastructure::database::init_collection(database_collection) {
-        Ok(size) => {
-            ret_size = size;
-        }
+        Ok(_) => {}
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while initializing the collection {} in the database : {:?}",
@@ -137,5 +130,5 @@ fn add_playlist_data_to_database(playlist: Playlist) -> Result<usize, DomainErro
             )));
         }
     };
-    return Ok(ret_size);
+    return Ok(true);
 }
