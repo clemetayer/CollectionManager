@@ -35,28 +35,28 @@ pub async fn create_new_playlist(name: &str) -> Result<bool, DomainError> {
     return Ok(true);
 }
 
-pub async fn create_collection_from_playlist(playlist_id: &u64) -> Result<bool, DomainError> {
-    match get_playlist(playlist_id).await {
+pub async fn create_collection_from_playlist(id: &u64) -> Result<bool, DomainError> {
+    match get_playlist(id).await {
         Ok(playlist) => {
             add_playlist_data_to_database(playlist)?;
         }
         Err(e) => {
             return Err(log_deezer_error(&format!(
                 "Error getting playlist {} : {:?}",
-                playlist_id, e
+                id, e
             )));
         }
     }
     return Ok(true);
 }
 
-pub async fn get_playlist(playlist_id: &u64) -> Result<Playlist, DomainError> {
-    match infrastructure::deezer::get_playlist(playlist_id).await {
+pub async fn get_playlist(id: &u64) -> Result<Playlist, DomainError> {
+    match infrastructure::deezer::get_playlist(id).await {
         Ok(playlist) => Ok(convert_playlist(playlist)),
         Err(e) => {
             return Err(log_deezer_error(&format!(
                 "Error getting playlist {} : {:?}",
-                playlist_id, e
+                id, e
             )))
         }
     }
@@ -91,15 +91,15 @@ pub fn get_track_id_from_url(url: String) -> u64 {
     }
 }
 
-pub fn get_collection_id_by_deezer_id(deezer_id: &str) -> Result<i32, DomainError> {
-    match get_collection_id_by_deezer_id_database(deezer_id) {
+pub fn get_collection_id_by_deezer_id(id: &str) -> Result<i32, DomainError> {
+    match get_collection_id_by_deezer_id_database(id) {
         Ok(id) => {
             return Ok(id);
         }
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while getting collection id {} : {:?}",
-                deezer_id, e
+                id, e
             )));
         }
     };

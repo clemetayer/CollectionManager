@@ -54,12 +54,10 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, DomainError> {
     }
 }
 
-pub async fn get_collection_tracks_excluding_children(
-    deezer_id: &str,
-) -> Result<Vec<Track>, DomainError> {
-    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
-    let playlist = get_playlist(&convert_string_to_u64(deezer_id)).await?;
-    let children_collections = get_direct_children_collections(deezer_id)?;
+pub async fn get_collection_tracks_excluding_children(id: &str) -> Result<Vec<Track>, DomainError> {
+    log_parameters_error(check_id_valid(id.to_string()))?;
+    let playlist = get_playlist(&convert_string_to_u64(id)).await?;
+    let children_collections = get_direct_children_collections(id)?;
     let mut tracks = playlist.tracks;
     for children_col in children_collections.clone().into_iter() {
         let playlist =
@@ -78,9 +76,9 @@ pub async fn get_collection_tracks_excluding_children(
 }
 
 // will return the basic children collections (no tracks or other children collections)
-pub fn get_direct_children_collections(deezer_id: &str) -> Result<Vec<Collection>, DomainError> {
-    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
-    let parent_id = get_collection_id_by_deezer_id(deezer_id)?;
+pub fn get_direct_children_collections(id: &str) -> Result<Vec<Collection>, DomainError> {
+    log_parameters_error(check_id_valid(id.to_string()))?;
+    let parent_id = get_collection_id_by_deezer_id(id)?;
     let children_collections: Vec<Collection>;
     match get_child_collections(&parent_id) {
         Ok(collections) => {
@@ -103,9 +101,9 @@ pub fn get_direct_children_collections(deezer_id: &str) -> Result<Vec<Collection
     return Ok(children_collections);
 }
 
-pub async fn get_collection(deezer_id: &str) -> Result<Collection, DomainError> {
-    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
-    match database::get_collection(deezer_id) {
+pub async fn get_collection(id: &str) -> Result<Collection, DomainError> {
+    log_parameters_error(check_id_valid(id.to_string()))?;
+    match database::get_collection(id) {
         Ok(collection) => {
             return Ok(Collection {
                 name: collection.name,
@@ -116,22 +114,22 @@ pub async fn get_collection(deezer_id: &str) -> Result<Collection, DomainError> 
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while getting the collection {} : {:?}",
-                deezer_id, e
+                id, e
             )));
         }
     }
 }
 
-pub async fn refresh_collection(collection_id: &str) -> Result<bool, DomainError> {
-    log_parameters_error(check_id_valid(collection_id.to_string()))?;
-    let playlist = get_playlist(&convert_string_to_u64(collection_id)).await?;
+pub async fn refresh_collection(id: &str) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(id.to_string()))?;
+    let playlist = get_playlist(&convert_string_to_u64(id)).await?;
     let parent_playlist_tracks_ids = playlist
         .clone()
         .tracks
         .into_iter()
         .map(|track| track.deezer_id)
         .collect::<Vec<_>>();
-    match get_child_collections(&get_collection_id_by_deezer_id(collection_id)?) {
+    match get_child_collections(&get_collection_id_by_deezer_id(id)?) {
         Ok(child_collections) => {
             let mut tracks_to_add: Vec<String> = Vec::new();
             for collection in child_collections.into_iter() {
@@ -145,12 +143,12 @@ pub async fn refresh_collection(collection_id: &str) -> Result<bool, DomainError
                     }
                 }
             }
-            match add_tracks_to_playlist(collection_id, tracks_to_add).await {
+            match add_tracks_to_playlist(id, tracks_to_add).await {
                 Ok(_) => return Ok(true),
                 Err(e) => {
                     return Err(log_deezer_error(&format!(
                         "Error while adding tracks to the playlist {} : {:?}",
-                        collection_id, e
+                        id, e
                     )));
                 }
             }
@@ -158,7 +156,7 @@ pub async fn refresh_collection(collection_id: &str) -> Result<bool, DomainError
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while getting the children from collection {} : {:?}",
-                collection_id, e
+                id, e
             )));
         }
     }
@@ -175,7 +173,7 @@ pub async fn update_all_collections() -> Result<bool, DomainError> {
         for child_id in next_children_ids.into_iter() {
             // Update the playlists ids
             if playlists_ids_to_update.contains(&child_id) {
-                playlists_ids_to_update.retain(|id| *id != child_id);
+                playlists_ids_to_update.retain(|id: &String| *id != child_id);
             }
             playlists_ids_to_update.insert(0, child_id.clone());
             // Add the next children ids
@@ -218,14 +216,14 @@ fn get_max_depth() -> u64 {
     return convert_string_to_u64(&get_env_variable("MAX_COLLECTION_DEPTH").as_str());
 }
 
-pub fn remove_collection(deezer_id: &str) -> Result<bool, DomainError> {
-    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
-    match remove_collection_in_database(&get_collection_id_by_deezer_id(deezer_id)?) {
+pub fn remove_collection(id: &str) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(id.to_string()))?;
+    match remove_collection_in_database(&get_collection_id_by_deezer_id(id)?) {
         Ok(res) => return Ok(res),
         Err(e) => {
             return Err(log_database_error(&format!(
                 "Error while removing collection {} in database : {:?}",
-                deezer_id, e
+                id, e
             )));
         }
     }
