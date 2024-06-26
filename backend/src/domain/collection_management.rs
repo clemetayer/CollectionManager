@@ -1,7 +1,8 @@
 use super::collection_commons::{
     create_collection_from_playlist, create_new_playlist, get_collection_id_by_deezer_id,
-    get_playlist_id_from_url,
+    get_playlist_id_from_url, log_parameters_error,
 };
+use super::controllers::{check_id_valid, check_init_collections};
 use super::domain_models::{self, Collection, CollectionListElement, Track};
 use super::errors::DomainError;
 use crate::common::common::get_env_variable;
@@ -16,6 +17,7 @@ use crate::infrastructure::{self, database};
 use log::error;
 
 pub async fn init_collections(options: domain_models::InitCollection) -> Result<bool, DomainError> {
+    log_parameters_error(check_init_collections(&options))?;
     // if from playlist, fill the collection with the playlist track
     match options.from_playlist {
         Some(url) => {
@@ -55,6 +57,7 @@ pub fn list_collections() -> Result<Vec<CollectionListElement>, DomainError> {
 pub async fn get_collection_tracks_excluding_children(
     deezer_id: &str,
 ) -> Result<Vec<Track>, DomainError> {
+    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
     let playlist = get_playlist(&convert_string_to_u64(deezer_id)).await?;
     let children_collections = get_direct_children_collections(deezer_id)?;
     let mut tracks = playlist.tracks;
@@ -76,6 +79,7 @@ pub async fn get_collection_tracks_excluding_children(
 
 // will return the basic children collections (no tracks or other children collections)
 pub fn get_direct_children_collections(deezer_id: &str) -> Result<Vec<Collection>, DomainError> {
+    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
     let parent_id = get_collection_id_by_deezer_id(deezer_id)?;
     let children_collections: Vec<Collection>;
     match get_child_collections(&parent_id) {
@@ -100,6 +104,7 @@ pub fn get_direct_children_collections(deezer_id: &str) -> Result<Vec<Collection
 }
 
 pub async fn get_collection(deezer_id: &str) -> Result<Collection, DomainError> {
+    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
     match database::get_collection(deezer_id) {
         Ok(collection) => {
             return Ok(Collection {
@@ -117,7 +122,8 @@ pub async fn get_collection(deezer_id: &str) -> Result<Collection, DomainError> 
     }
 }
 
-pub async fn refresh_collection_handler(collection_id: &str) -> Result<bool, DomainError> {
+pub async fn refresh_collection(collection_id: &str) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(collection_id.to_string()))?;
     let playlist = get_playlist(&convert_string_to_u64(collection_id)).await?;
     let parent_playlist_tracks_ids = playlist
         .clone()
@@ -198,7 +204,7 @@ pub async fn update_all_collections() -> Result<bool, DomainError> {
     }
     // Update collections
     for id in playlists_ids_to_update.into_iter() {
-        match refresh_collection_handler(id.as_str()).await {
+        match refresh_collection(id.as_str()).await {
             Ok(_) => {}
             Err(e) => {
                 error!("Error while refreshing collection {} : {:?}", id, e);
@@ -212,7 +218,8 @@ fn get_max_depth() -> u64 {
     return convert_string_to_u64(&get_env_variable("MAX_COLLECTION_DEPTH").as_str());
 }
 
-pub fn remove_collection_handler(deezer_id: &str) -> Result<bool, DomainError> {
+pub fn remove_collection(deezer_id: &str) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(deezer_id.to_string()))?;
     match remove_collection_in_database(&get_collection_id_by_deezer_id(deezer_id)?) {
         Ok(res) => return Ok(res),
         Err(e) => {

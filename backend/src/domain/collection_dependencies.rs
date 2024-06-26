@@ -1,6 +1,9 @@
-use super::collection_commons::{
-    convert_string_to_u64, create_collection_from_playlist, get_collection_id_by_deezer_id,
-    log_database_error, log_deezer_error,
+use super::{
+    collection_commons::{
+        convert_string_to_u64, create_collection_from_playlist, get_collection_id_by_deezer_id,
+        log_database_error, log_deezer_error, log_parameters_error,
+    },
+    controllers::check_id_valid,
 };
 use crate::{
     domain::errors::DomainError,
@@ -18,6 +21,8 @@ pub async fn add_collection_dependency(
     parent_deezer_id: &str,
     child_deezer_id: &str,
 ) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(parent_deezer_id.to_string()))?;
+    log_parameters_error(check_id_valid(child_deezer_id.to_string()))?;
     add_collection_if_not_in_database(parent_deezer_id).await?;
     add_collection_if_not_in_database(child_deezer_id).await?;
     add_collection_dependency_to_database(parent_deezer_id, child_deezer_id)?;
@@ -70,6 +75,8 @@ pub fn remove_collection_dependency(
     parent_deezer_id: &str,
     child_deezer_id: &str,
 ) -> Result<bool, DomainError> {
+    log_parameters_error(check_id_valid(parent_deezer_id.to_string()))?;
+    log_parameters_error(check_id_valid(child_deezer_id.to_string()))?;
     let parent_id = get_collection_id_by_deezer_id(parent_deezer_id)?;
     let child_id = get_collection_id_by_deezer_id(child_deezer_id)?;
     match remove_collection_to_parent(&parent_id, &child_id) {

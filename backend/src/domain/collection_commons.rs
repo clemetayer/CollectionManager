@@ -105,6 +105,14 @@ pub fn get_collection_id_by_deezer_id(deezer_id: &str) -> Result<i32, DomainErro
     };
 }
 
+pub fn log_parameters_error(failures: String) -> Result<bool, DomainError> {
+    if !failures.is_empty() {
+        error!("Handler - error in input parameters : {}", failures);
+        return Err(DomainError::DomainParamError());
+    }
+    return Ok(true);
+}
+
 pub fn log_database_error(message: &str) -> DomainError {
     error!("Handler : {}", message);
     return DomainError::DomainDataError();

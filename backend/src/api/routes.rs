@@ -5,8 +5,8 @@ use crate::domain::{
         clear_data as clear_data_domain, get_collection,
         get_collection_tracks_excluding_children as get_collection_tracks_excluding_children_domain,
         get_direct_children_collections as get_direct_children_collections_domain,
-        init_collections, list_collections, refresh_collection_handler, remove_collection_handler,
-        update_all_collections,
+        init_collections, list_collections, refresh_collection as refresh_collection_domain,
+        remove_collection as remove_collection_domain, update_all_collections,
     },
     domain_models::InitCollection,
 };
@@ -182,7 +182,7 @@ pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejecti
 
 async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Rejection> {
     info!("refreshing collection {}", collection_id);
-    match refresh_collection_handler(collection_id.as_str()).await {
+    match refresh_collection_domain(collection_id.as_str()).await {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
@@ -267,7 +267,7 @@ pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejectio
 
 async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rejection> {
     info!("removing collection {}", collection_id);
-    match remove_collection_handler(collection_id.as_str()) {
+    match remove_collection_domain(collection_id.as_str()) {
         Ok(_) => {
             let reply = warp::reply();
             Ok(warp::reply::with_header(
