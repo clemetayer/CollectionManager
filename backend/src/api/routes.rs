@@ -9,9 +9,10 @@ use crate::domain::{
         remove_collection as remove_collection_domain, update_all_collections,
     },
     domain_models::InitCollection,
+    errors::DomainError,
 };
 use log::info;
-use warp::{filters::cors::Builder, Filter, Rejection, Reply};
+use warp::{filters::cors::Builder, reply::Response, Filter, Rejection, Reply};
 
 pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     init_collection()
@@ -39,7 +40,7 @@ pub fn init_collection() -> impl Filter<Extract = impl Reply, Error = Rejection>
 
 async fn call_init_collection(
     init_collection_input: InitCollectionInput,
-) -> Result<impl Reply, Rejection> {
+) -> Result<Response, Rejection> {
     info!(
         "initializing collection {}",
         init_collection_input.clone().name
@@ -51,13 +52,9 @@ async fn call_init_collection(
     match init_collections(init_collections_data).await {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -69,7 +66,7 @@ pub fn get_collection_list() -> impl Filter<Extract = impl Reply, Error = Reject
         .with(&get_cors_config())
 }
 
-async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
+async fn call_get_collection_list() -> Result<Response, Rejection> {
     info!("getting collection list");
     let collection_list = list_collections();
     match collection_list {
@@ -77,10 +74,7 @@ async fn call_get_collection_list() -> Result<impl Reply, Rejection> {
             let reply = warp::reply::json(&collection_list).into_response();
             Ok(reply)
         }
-        Err(_) => {
-            eprintln!("Error while fetching the collection list");
-            Err(warp::reject())
-        }
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -93,13 +87,11 @@ pub fn get_collection_tracks_excluding_children(
         .with(&get_cors_config())
 }
 
-async fn call_get_collection_tracks_excluding_children(
-    id: String,
-) -> Result<impl Reply, Rejection> {
+async fn call_get_collection_tracks_excluding_children(id: String) -> Result<Response, Rejection> {
     info!("getting tracks from collection {}", id);
     match get_collection_tracks_excluding_children_domain(id.as_str()).await {
         Ok(tracks) => Ok(warp::reply::json(&tracks).into_response()),
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -111,11 +103,11 @@ pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejec
         .with(&get_cors_config())
 }
 
-async fn call_get_collection_by_id(id: String) -> Result<impl Reply, Rejection> {
+async fn call_get_collection_by_id(id: String) -> Result<Response, Rejection> {
     info!("getting collection by id {}", id);
     match get_collection(id.as_str()).await {
         Ok(collection) => Ok(warp::reply::json(&collection).into_response()),
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -128,11 +120,11 @@ pub fn get_direct_children_collections(
         .with(&get_cors_config())
 }
 
-async fn call_get_direct_children_collections(id: String) -> Result<impl Reply, Rejection> {
+async fn call_get_direct_children_collections(id: String) -> Result<Response, Rejection> {
     info!("getting children collections of id {}", id);
     match get_direct_children_collections_domain(id.as_str()) {
         Ok(collections) => Ok(warp::reply::json(&collections).into_response()),
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -148,7 +140,7 @@ pub fn add_collection_to_parent() -> impl Filter<Extract = impl Reply, Error = R
 
 async fn call_add_collection_to_parent(
     add_collection_to_parent_input: AddCollectionToParent,
-) -> Result<impl Reply, Rejection> {
+) -> Result<Response, Rejection> {
     info!(
         "adding collection {} to {}",
         &add_collection_to_parent_input.child_collection_id,
@@ -162,13 +154,9 @@ async fn call_add_collection_to_parent(
     {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -180,18 +168,14 @@ pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejecti
         .with(&get_cors_config())
 }
 
-async fn call_refresh_collection(collection_id: String) -> Result<impl Reply, Rejection> {
+async fn call_refresh_collection(collection_id: String) -> Result<Response, Rejection> {
     info!("refreshing collection {}", collection_id);
     match refresh_collection_domain(collection_id.as_str()).await {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -203,18 +187,14 @@ pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Re
         .with(&get_cors_config())
 }
 
-async fn call_refresh_all_collections() -> Result<impl Reply, Rejection> {
+async fn call_refresh_all_collections() -> Result<Response, Rejection> {
     info!("refreshing all collections");
     match update_all_collections().await {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -231,7 +211,7 @@ pub fn remove_collection_from_parent(
 
 async fn call_remove_collection_to_parent(
     remove_collection_to_parent_input: RemoveCollectionToParent,
-) -> Result<impl Reply, Rejection> {
+) -> Result<Response, Rejection> {
     info!(
         "removing collection {} from collection {}",
         remove_collection_to_parent_input.child_collection_id,
@@ -247,13 +227,9 @@ async fn call_remove_collection_to_parent(
     ) {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -265,18 +241,14 @@ pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejectio
         .with(&get_cors_config())
 }
 
-async fn call_remove_collection(collection_id: String) -> Result<impl Reply, Rejection> {
+async fn call_remove_collection(collection_id: String) -> Result<Response, Rejection> {
     info!("removing collection {}", collection_id);
     match remove_collection_domain(collection_id.as_str()) {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -288,18 +260,14 @@ pub fn clear_data() -> impl Filter<Extract = impl Reply, Error = Rejection> + Cl
         .with(&get_cors_config())
 }
 
-async fn call_clear_data() -> Result<impl Reply, Rejection> {
+async fn call_clear_data() -> Result<Response, Rejection> {
     info!("clearing data");
     match clear_data_domain() {
         Ok(_) => {
             let reply = warp::reply();
-            Ok(warp::reply::with_header(
-                reply,
-                "Access-Control-Allow-Origin",
-                "*",
-            ))
+            Ok(warp::reply::with_header(reply, "Access-Control-Allow-Origin", "*").into_response())
         }
-        Err(_) => Err(warp::reject()),
+        Err(e) => Ok(handle_domain_errors(e)),
     }
 }
 
@@ -314,4 +282,21 @@ fn get_cors_config() -> Builder {
             "Content-Type",
         ])
         .allow_methods(vec!["GET", "POST", "PUT", "DELETE"]);
+}
+
+fn handle_domain_errors(e: DomainError) -> Response {
+    match e {
+        crate::domain::errors::DomainError::DomainParamError() => {
+            return warp::reply::with_status("BAD_REQUEST", warp::http::StatusCode::BAD_REQUEST)
+                .into_response();
+        }
+        crate::domain::errors::DomainError::DomainDataError()
+        | crate::domain::errors::DomainError::DomainMusicServiceError() => {
+            return warp::reply::with_status(
+                "INTERNAL_SERVER_ERROR",
+                warp::http::StatusCode::INTERNAL_SERVER_ERROR,
+            )
+            .into_response();
+        }
+    }
 }

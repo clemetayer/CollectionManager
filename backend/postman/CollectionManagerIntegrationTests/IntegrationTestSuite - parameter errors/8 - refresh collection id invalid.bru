@@ -1,0 +1,17 @@
+meta {
+  name: 8 - refresh collection id invalid
+  type: http
+  seq: 11
+}
+
+put {
+  url: http://localhost:8000/collection-management/refresh-collection/123invalid
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+}

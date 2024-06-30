@@ -1,0 +1,25 @@
+meta {
+  name: 2-1 - init_collection invalid
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/collection/init
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name":"test-invalid",
+      "from_playlist":"https://www.deezer.com/fr/playlist/123invalid"
+  }
+}
+
+tests {
+  test("Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+}

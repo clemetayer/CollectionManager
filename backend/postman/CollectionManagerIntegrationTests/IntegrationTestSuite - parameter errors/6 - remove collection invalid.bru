@@ -1,0 +1,17 @@
+meta {
+  name: 6 - remove collection invalid
+  type: http
+  seq: 8
+}
+
+delete {
+  url: http://localhost:8000/collection/123invalid
+  body: json
+  auth: none
+}
+
+tests {
+  test("Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+}

@@ -1,0 +1,25 @@
+meta {
+  name: 7-2 - add collection dependency
+  type: http
+  seq: 10
+}
+
+post {
+  url: http://localhost:8000/collection-management/add-collection
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "parent_collection_id":"123456",
+      "child_collection_id":"456invalid"
+  }
+}
+
+tests {
+  test("Status code is 400", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+  
+}

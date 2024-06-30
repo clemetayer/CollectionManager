@@ -1,4 +1,4 @@
-use super::domain_models::InitCollection;
+use super::{collection_commons::get_playlist_id_from_url, domain_models::InitCollection};
 
 const API_PATH_PLAYLIST: &str = "https://www.deezer.com/fr/playlist/";
 
@@ -10,6 +10,9 @@ pub fn check_init_collections(params: &InitCollection) -> String {
                 res.push_str(
                     "- from_playlist does not start with https://www.deezer.com/fr/playlist/\n",
                 );
+            }
+            if get_playlist_id_from_url(playlist_url.to_string()) == 0 {
+                res.push_str("- playlist id is invalid\n");
             }
         }
         None => {}
