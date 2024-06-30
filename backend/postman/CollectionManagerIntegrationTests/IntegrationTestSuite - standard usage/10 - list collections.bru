@@ -1,0 +1,28 @@
+meta {
+  name: 10 - list collections
+  type: http
+  seq: 18
+}
+
+get {
+  url: http://localhost:8000/collection/list
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response body is correct", function() {
+      const expected_body = [
+          {
+              "name": "test_playlist_1",
+              "deezer_id": "123456",
+              "url": "https://www.deezer.com/playlist/123456"
+          }
+      ]
+      expect(res.getBody()).to.deep.eq(expected_body);
+  });
+}

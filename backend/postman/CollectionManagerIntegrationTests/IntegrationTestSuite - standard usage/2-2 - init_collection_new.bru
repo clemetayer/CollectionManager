@@ -1,0 +1,24 @@
+meta {
+  name: 2-2 - init_collection_new
+  type: http
+  seq: 3
+}
+
+post {
+  url: http://localhost:8000/collection/init
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name":"test_new"
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}

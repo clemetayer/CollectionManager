@@ -1,0 +1,25 @@
+meta {
+  name: 2-1 - init_collection
+  type: http
+  seq: 2
+}
+
+post {
+  url: http://localhost:8000/collection/init
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name":"test",
+      "from_playlist":"https://www.deezer.com/fr/playlist/123456"
+  }
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+}

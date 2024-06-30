@@ -1,0 +1,17 @@
+meta {
+  name: 6-1 - refresh collection 123456
+  type: http
+  seq: 13
+}
+
+put {
+  url: http://localhost:8000/collection-management/refresh-collection/123456
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

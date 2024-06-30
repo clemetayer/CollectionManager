@@ -1,0 +1,37 @@
+meta {
+  name: 3-3 - get collection tracks by id 1
+  type: http
+  seq: 6
+}
+
+get {
+  url: http://localhost:8000/collection/tracks/123456
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+  
+  test("Response body is correct", function() {
+      const expected_body = [
+          {
+              "id": 1,
+              "deezer_id": "1",
+              "title": "test_track_1",
+              "link": "https://www.deezer.com/track/1",
+              "artist": "test_artist_1"
+          },
+          {
+              "id": 2,
+              "deezer_id": "2",
+              "title": "test_track_2",
+              "link": "https://www.deezer.com/track/2",
+              "artist": "test_artist_2"
+          }
+      ]
+      expect(res.getBody()).to.deep.eq(expected_body);
+  });
+}
