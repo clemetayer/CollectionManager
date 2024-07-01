@@ -28,7 +28,19 @@ pub fn build_routes() -> impl Filter<Extract = impl Reply, Error = Rejection> + 
         .or(clear_data())
 }
 
-// POST /collection/init
+/// POST /collection/init
+///
+/// initializes a collection
+///     - in deezer and in the database if from_playlist is empty
+///     - in the database only, from an existing deezer playlist if from_playlist is set
+///
+/// inputs : Json with body
+/// {
+///     "name":String, // name of the collection. will be ignored if from_playlist is set.
+///     "from_playlist":Option<String> // url of the deezer playlist
+/// }
+///
+/// outputs : empty
 pub fn init_collection() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / "init")
         .and(warp::post())
@@ -58,7 +70,13 @@ async fn call_init_collection(
     }
 }
 
-// GET /collection/list
+/// GET /collection/list
+///
+/// Returns a list of all the collections saved in the database
+///
+/// inputs : empty
+///
+/// outputs : list of collections
 pub fn get_collection_list() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / "list")
         .and(warp::get()) // Avoids huge payloads
@@ -78,7 +96,13 @@ async fn call_get_collection_list() -> Result<Response, Rejection> {
     }
 }
 
-// GET /collection/tracks/<collection-id>
+/// GET /collection/tracks/<collection-id>
+///
+/// Returns the track from a collection, but without the tracks from the children collections
+///
+/// inputs : deezer playlist id as a String
+///
+/// outputs : list of tracks
 pub fn get_collection_tracks_excluding_children(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / "tracks" / String)
@@ -95,7 +119,13 @@ async fn call_get_collection_tracks_excluding_children(id: String) -> Result<Res
     }
 }
 
-// GET /collection/<collection_id>
+/// GET /collection/<collection_id>
+///
+/// Returns the data of a collection by its deezer playlist id
+///
+/// inputs : deezer playlist id as a String
+///
+/// outputs : collection data
 pub fn get_collection_by_id() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / String)
         .and(warp::get())
@@ -111,7 +141,13 @@ async fn call_get_collection_by_id(id: String) -> Result<Response, Rejection> {
     }
 }
 
-// GET /collection-management/children/<collection-id>
+/// GET /collection-management/children/<collection-id>
+///
+/// Returns the children of a collection
+///
+/// inputs : deezer playlist id as a String
+///
+/// outputs : list of the children collections
 pub fn get_direct_children_collections(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "children" / String)
@@ -128,7 +164,15 @@ async fn call_get_direct_children_collections(id: String) -> Result<Response, Re
     }
 }
 
-// POST /collection-management/add-collection
+/// POST /collection-management/add-collection
+///
+/// Adds a collection in another collection (child in parent)
+///
+/// inputs : Json with body
+/// {
+///     "parent_collection_id": String, // parent deezer playlist id
+///     "child_collection_id": String // child deezer playlist id
+/// }
 pub fn add_collection_to_parent() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "add-collection")
         .and(warp::post())
@@ -160,7 +204,13 @@ async fn call_add_collection_to_parent(
     }
 }
 
-// PUT /collection-management/refresh-collection/<collection-id>
+/// PUT /collection-management/refresh-collection/<collection-id>
+///
+/// Refreshes a collection, i.e, adds the tracks from a child collection into the parent collection in deezer
+///
+/// inputs : deezer id as a String
+///
+/// outputs : nothing
 pub fn refresh_collection() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "refresh-collection" / String)
         .and(warp::put())
@@ -179,7 +229,13 @@ async fn call_refresh_collection(collection_id: String) -> Result<Response, Reje
     }
 }
 
-// PUT /collection-management/refresh-all-collections
+/// PUT /collection-management/refresh-all-collections
+///
+/// Refreshes all the collections, i.e, adds the tracks from a child collection into the parent collection in deezer
+///
+/// inputs : empty
+///
+/// outputs : empty
 pub fn refresh_all_collections() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "refresh-all-collections")
         .and(warp::put())
@@ -198,7 +254,18 @@ async fn call_refresh_all_collections() -> Result<Response, Rejection> {
     }
 }
 
-// DELETE /collection-management/remove-collection
+/// DELETE /collection-management/remove-collection
+///
+/// Removes a collection from another collection (i.e removes a child collection from its parent)
+/// Warning : this will only affect the database, you will have to remove the associated tracks from deezer manually
+///
+/// inputs : Json with body
+/// {
+///     "parent_collection_id": String, // parent deezer playlist id
+///     "child_collection_id": String // child deezer playlist id
+/// }
+///
+/// outputs : empty
 pub fn remove_collection_from_parent(
 ) -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection-management" / "remove-collection")
@@ -233,7 +300,14 @@ async fn call_remove_collection_to_parent(
     }
 }
 
-// DELETE /collection/<collection-id>
+/// DELETE /collection/<collection-id>
+///
+/// Removes a collection
+/// Warning : this will only affect the database, you will have to remove the associated tracks from deezer manually
+///
+/// inputs : deezer playlist id as a String
+///
+/// outputs : empty
 pub fn remove_collection() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("collection" / String)
         .and(warp::delete())
@@ -252,7 +326,15 @@ async fn call_remove_collection(collection_id: String) -> Result<Response, Rejec
     }
 }
 
-// DELETE /clear-data -- Should only be used for integration tests, or if you want a full reset of your data
+/// DELETE /clear-data
+///
+/// Resets the database
+/// Should only be used for integration tests, or if you want a full reset of your data
+/// Warning : this will only affect the database, you will have to remove the associated tracks from deezer manually
+///
+/// inputs : empty
+///
+/// outputs : empty
 pub fn clear_data() -> impl Filter<Extract = impl Reply, Error = Rejection> + Clone {
     warp::path!("clear-data")
         .and(warp::delete())
