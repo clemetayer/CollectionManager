@@ -27,7 +27,9 @@
                         this.fromPlaylist = null;
                     }
                     console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
-                    collectionService.initCollection(this.collectionName, this.fromPlaylist);
+                    collectionService.initCollection(this.collectionName, this.fromPlaylist).then(_ => {
+                        this.$emit("refresh-data");
+                    });
                 }
             },
         }

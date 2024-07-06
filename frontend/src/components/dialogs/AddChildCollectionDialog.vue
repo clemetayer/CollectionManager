@@ -24,11 +24,15 @@
                     if(this.fromUrlChecked){
                         let child_id_split = this.childCollectionURL.split("/");
                         let child_id = child_id_split[child_id_split.length - 1];
-                        collectionService.addChildCollection(this.collection.deezer_id, child_id);
+                        collectionService.addChildCollection(this.collection.deezer_id, child_id).then(_ => {
+                            this.$emit("refresh-data");
+                        });
                         console.log("adding child collection " + child_id + " to " + this.collection.deezer_id + " from URL"); 
                     }
                     else {
-                        collectionService.addChildCollection(this.collection.deezer_id, this.childCollection);
+                        collectionService.addChildCollection(this.collection.deezer_id, this.childCollection).then(_ => {
+                            this.$emit("refresh-data");
+                        });
                         console.log("adding child collection " + this.childCollection + " to " + this.collection.deezer_id + " from URL");
                     }
                 }

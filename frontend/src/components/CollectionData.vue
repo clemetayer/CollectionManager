@@ -50,6 +50,9 @@
             },
             openRemoveCollection() {
                 this.$refs.removeCollectionDialogRef.openDialog();
+            },
+            refreshData() {
+                this.$emit("refresh-data");
             }
         }
     });
@@ -101,8 +104,8 @@
             </ui-grid-cell>
             <ui-grid-cell></ui-grid-cell>
         </ui-grid>
-        <AddChildCollectionDialog ref="addChildCollectionDialogRef" v-bind:collections="collections" v-bind:collection="collection" />
-        <RemoveChildCollectionDialog ref="removeChildCollectionDialogRef" v-bind:collection="collection" />
-        <RemoveCollectionDialog ref="removeCollectionDialogRef" v-bind:collection="collection" />
+        <AddChildCollectionDialog ref="addChildCollectionDialogRef" v-bind:collections="collections" v-bind:collection="collection" @refresh-data="refreshData"/>
+        <RemoveChildCollectionDialog ref="removeChildCollectionDialogRef" v-bind:collection="collection" @refresh-data="refreshData"/>
+        <RemoveCollectionDialog ref="removeCollectionDialogRef" v-bind:collection="collection" @refresh-data="refreshData"/>
     </div>
 </template>

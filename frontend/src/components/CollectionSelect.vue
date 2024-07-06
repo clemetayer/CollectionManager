@@ -50,6 +50,9 @@ import { type SelectOption } from "../models/balmui.model"
             },
             updateAllCollections() {
                 collectionService.updateAllCollections();
+            },
+            refreshData() {
+                this.retrieveCollections();
             }
         },
         mounted() {
@@ -67,8 +70,8 @@ import { type SelectOption } from "../models/balmui.model"
             </v-container>
             <br/>
             <ui-button @click="updateAllCollections">Update all collections</ui-button>
-            <CollectionData ref="collectionDataRef"/>
+            <CollectionData ref="collectionDataRef" @refresh-data="refreshData"/>
         </div>
-        <AddCollectionDialog ref="addCollectionDialogRef"/>
+        <AddCollectionDialog ref="addCollectionDialogRef" @refresh-data="refreshData"/>
     </div>
 </template>

@@ -18,7 +18,9 @@
             },
             onConfirm(result : any) {
                 if(result) {
-                    collectionService.removeCollection(this.collection.deezer_id);
+                    collectionService.removeCollection(this.collection.deezer_id).then(_ => {
+                        this.$emit("refresh-data");
+                    });
                 }
             },
         }
