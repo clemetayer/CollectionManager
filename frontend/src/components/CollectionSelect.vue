@@ -2,6 +2,7 @@
 import { defineComponent } from 'vue';
 import { CollectionService } from '../service/collection.service';
 import CollectionData from './CollectionData.vue';
+import AddCollectionDialog from './dialogs/AddCollectionDialog.vue';
 import { type Collection } from "../models/collection.model"
 import { type SelectOption } from "../models/balmui.model"
 
@@ -11,11 +12,11 @@ import { type SelectOption } from "../models/balmui.model"
         name:"collection-select",
         components: {
             CollectionData,
+            AddCollectionDialog
         },
         data() {
             return {
                 options: [] as SelectOption[],
-                open: false,
                 selectedOption: '',
                 collectionName: "",
                 fromPlaylistChecked: false,
@@ -45,13 +46,7 @@ import { type SelectOption } from "../models/balmui.model"
                 console.log(this.selectedOption);
             },
             addCollection() {
-                this.open = true;
-            },
-            onConfirm(result : any) {
-                if(result){
-                    console.log("add collection " + this.collectionName + " from playlist " + this.fromPlaylist);
-                    collectionService.initCollection(this.collectionName, this.fromPlaylist);
-                }
+                this.$refs.addCollectionDialogRef.openDialog()
             },
             updateAllCollections() {
                 collectionService.updateAllCollections();
@@ -74,38 +69,6 @@ import { type SelectOption } from "../models/balmui.model"
             <ui-button @click="updateAllCollections">Update all collections</ui-button>
             <CollectionData ref="collectionDataRef"/>
         </div>
-        <ui-dialog v-model="open" @confirm="onConfirm">
-            <ui-dialog-title>Enter the collection name</ui-dialog-title>
-            <ui-dialog-content>
-                <form method="dialog">
-                    <div>
-                        <label>Collection name :</label>
-                        <ui-textfield
-                            v-model="collectionName"
-                            :disabled="fromPlaylistChecked"
-                            helper-text-id="collection-name-field-helper-text"
-                        >
-                            Collection name
-                        </ui-textfield>
-                    </div>
-                    <div>
-                        <ui-form-field>
-                            <label>From playlist :</label>
-                            <ui-checkbox v-model="fromPlaylistChecked" input-id="checkbox"></ui-checkbox>
-                        </ui-form-field>
-                    </div>
-                    <div v-if="fromPlaylistChecked">
-                        <label>From playlist :</label>
-                        <ui-textfield
-                            v-model="fromPlaylist"
-                            helper-text-id="from-playlist-field-helper-text"
-                        >
-                            Deezer playlist URL
-                        </ui-textfield>
-                    </div>
-                </form>
-            </ui-dialog-content>
-            <ui-dialog-actions></ui-dialog-actions>
-        </ui-dialog>
+        <AddCollectionDialog ref="addCollectionDialogRef"/>
     </div>
 </template>

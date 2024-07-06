@@ -20,7 +20,7 @@ export class CollectionService {
             })
     }
 
-    async initCollection(name:String, fromPlaylist?:String) {
+    async initCollection(name:String, fromPlaylist:String|null) {
         return this.axiosInstance.post(ConstantsAPI.PATH_COLLECTION_INIT, {
                 name:name,
                 from_playlist:fromPlaylist
