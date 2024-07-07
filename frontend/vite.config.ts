@@ -14,5 +14,13 @@ export default defineConfig({
       'balm-ui-plus': 'balm-ui/dist/balm-ui-plus.esm.js',
       'balm-ui-css': 'balm-ui/dist/balm-ui.css'
     }
-  }
+  },
+  server: {
+    host: true,
+    port: 5173
+  },
+  preview: {
+    host: true,
+    port: 5173
+  } 
 })
