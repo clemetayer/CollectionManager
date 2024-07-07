@@ -10,3 +10,11 @@ services:
       - "8000:8000"
     volumes:
       - ../../backend/db:/backend/db
+    network_mode: host
+
+  frontend:
+    build:
+      context: ../../frontend
+    ports:
+      - "5173:5173"
+    network_mode: host
