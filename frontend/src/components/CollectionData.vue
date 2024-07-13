@@ -62,16 +62,16 @@
     <div>
         <h2>
             <v-container>
-                <a v-bind:href="collection.url">{{ collection.name }}</a>
-                <ui-icon-button icon="add" @click="addChildCollection()"></ui-icon-button>
-                <ui-icon-button icon="clear" @click="openRemoveCollection()"></ui-icon-button>
+                <a v-bind:href="collection.url" data-cy="collection-data-url">{{ collection.name }}</a>
+                <ui-icon-button data-cy="add-child-collection-button" icon="add" @click="addChildCollection()"></ui-icon-button>
+                <ui-icon-button data-cy="remove-collection-button" icon="clear" @click="openRemoveCollection()"></ui-icon-button>
             </v-container>
         </h2>
-        <ui-button @click="updateCollection">Update collection</ui-button>
+        <ui-button data-cy="update-collection-button" @click="updateCollection">Update collection</ui-button>
         <ui-grid>
             <ui-grid-cell></ui-grid-cell>
             <ui-grid-cell>
-                <ui-list>
+                <ui-list data-cy="children-collection-list">
                     <ui-item v-for="childCol in childrenCollections" :key="childCol">
                         <ui-item-first-content>
                             <ui-icon>queue_music</ui-icon>
@@ -82,11 +82,11 @@
                             </ui-item-text1>
                         </ui-item-text-content>
                         <ui-item-last-content>
-                            <ui-icon-button icon="clear" @click="openRemoveChildCollection(childCol)"></ui-icon-button>
+                            <ui-icon-button icon="clear" @click="openRemoveChildCollection(childCol)" data-cy="remove-child-collection-button"></ui-icon-button>
                         </ui-item-last-content>
                     </ui-item>
                 </ui-list>
-                <ui-list>
+                <ui-list data-cy="track-list">
                     <ui-item v-for="track in tracks" :key="track">
                         <ui-item-first-content>
                             <ui-icon>music_note</ui-icon>

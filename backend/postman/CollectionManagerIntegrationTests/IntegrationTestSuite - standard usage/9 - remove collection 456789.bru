@@ -10,13 +10,6 @@ delete {
   auth: none
 }
 
-body:json {
-  {
-      "parent_collection_id":"123456",
-      "child_collection_id":"456789"
-  }
-}
-
 tests {
   test("Status code is 200", function () {
       expect(res.getStatus()).to.equal(200);

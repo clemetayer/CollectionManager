@@ -33,7 +33,7 @@
                         collectionService.addChildCollection(this.collection.deezer_id, this.childCollection).then(_ => {
                             this.$emit("refresh-data");
                         });
-                        console.log("adding child collection " + this.childCollection + " to " + this.collection.deezer_id + " from URL");
+                        console.log("adding child collection " + this.childCollection + " to " + this.collection.deezer_id + " Select URL");
                     }
                 }
             },
@@ -46,29 +46,30 @@
 </script>
 
 <template>
-    <ui-dialog v-model="open" @confirm="onConfirm">
+    <ui-dialog v-model="open" @confirm="onConfirm" data-cy="add-child-collection-dialog">
         <ui-dialog-title>Enter the child deezer playlist url or select from the dropdown</ui-dialog-title>
         <ui-dialog-content>
             <form method="dialog">
-                <div>
-                    <ui-form-field>
-                        <label>From url :</label>
-                        <ui-checkbox v-model="fromUrlChecked" input-id="checkbox"></ui-checkbox>
-                    </ui-form-field>
-                </div>
                 <div v-if="!fromUrlChecked">
-                    <ui-select fullwidth v-model="childCollection" :options="collections" @selected="onSelectChildCollection($event)"></ui-select>
+                    <ui-select fullwidth v-model="childCollection" :options="collections" @selected="onSelectChildCollection($event)" data-cy="add-child-collection-dialog-select"></ui-select>
                 </div>
                 <div v-if="fromUrlChecked">
                     <ui-textfield
                         v-model="childCollectionURL"
                         helper-text-id="from-playlist-field-helper-text"
+                        data-cy="add-child-collection-dialog-url-field"
                     >
                         Deezer playlist URL
                     </ui-textfield>
                 </div>
+                <div>
+                    <ui-form-field>
+                        <label>From url :</label>
+                        <ui-checkbox v-model="fromUrlChecked" input-id="checkbox" data-cy="add-child-collection-dialog-from-playlist-check"></ui-checkbox>
+                    </ui-form-field>
+                </div>
             </form>
         </ui-dialog-content>
-        <ui-dialog-actions></ui-dialog-actions>
+        <ui-dialog-actions data-cy="add-child-collection-dialog-actions"></ui-dialog-actions>
     </ui-dialog>
 </template>

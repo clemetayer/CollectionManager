@@ -37,7 +37,7 @@
 </script>
 
 <template>
-    <ui-dialog v-model="open" @confirm="onConfirm">
+    <ui-dialog v-model="open" @confirm="onConfirm" data-cy="add-collection-dialog">
             <ui-dialog-title>Enter the collection name</ui-dialog-title>
             <ui-dialog-content>
                 <form method="dialog">
@@ -46,6 +46,7 @@
                         <ui-textfield
                             v-model="fromPlaylist"
                             helper-text-id="from-playlist-field-helper-text"
+                            data-cy="add-collection-dialog-from-playlist-field"
                         >
                             Deezer playlist URL
                         </ui-textfield>
@@ -56,6 +57,7 @@
                             v-model="collectionName"
                             :disabled="fromPlaylistChecked"
                             helper-text-id="collection-name-field-helper-text"
+                            data-cy="add-collection-dialog-collection-name-field"
                         >
                             Collection name
                         </ui-textfield>
@@ -63,11 +65,11 @@
                     <div>
                         <ui-form-field>
                             <label>From playlist :</label>
-                            <ui-checkbox v-model="fromPlaylistChecked" input-id="checkbox"></ui-checkbox>
+                            <ui-checkbox v-model="fromPlaylistChecked" input-id="checkbox" data-cy="add-collection-dialog-from-playlist-check"></ui-checkbox>
                         </ui-form-field>
                     </div>
                 </form>
             </ui-dialog-content>
-            <ui-dialog-actions></ui-dialog-actions>
+            <ui-dialog-actions data-cy="add-collection-dialog-actions"></ui-dialog-actions>
         </ui-dialog>
 </template>

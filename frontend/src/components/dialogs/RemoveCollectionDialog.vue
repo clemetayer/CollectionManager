@@ -28,12 +28,12 @@
 </script>
 
 <template>
-    <ui-dialog v-model="open" @confirm="onConfirm">
+    <ui-dialog v-model="open" @confirm="onConfirm" data-cy="remove-collection-dialog">
         <ui-dialog-title>Remove the collection ?</ui-dialog-title>
         <ui-dialog-content>
             Do you really want to remove the collection <a v-bind:href="collection.url">{{ collection.name }}</a> from the database ? <br/><br/>
             This will not remove the distant Deezer playlist.
         </ui-dialog-content>
-        <ui-dialog-actions></ui-dialog-actions>
+        <ui-dialog-actions data-cy="remove-collection-dialog-actions"></ui-dialog-actions>
     </ui-dialog>
 </template>

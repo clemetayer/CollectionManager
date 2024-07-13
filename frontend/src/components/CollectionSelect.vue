@@ -29,7 +29,10 @@ import { type SelectOption } from "../models/balmui.model"
                     .listCollections()
                     .then((collections) => {
                         this.options = collections.map((collection) => this.collectionToSelectOption(collection));
-                        this.selectedOption = this.options[0].value;
+                        if(this.options.length > 0) {
+                            this.selectedOption = this.options[0].value;
+                            this.$refs.collectionDataRef.displayCollection(this.selectedOption);
+                        }
                         console.log("options = " + this.options);
                     })
             },
@@ -65,8 +68,8 @@ import { type SelectOption } from "../models/balmui.model"
     <div>
         <div style="text-align:center">
             <v-container>
-                <ui-select v-model="selectedOption" :options="options" @selected="onSelectCollection($event)"></ui-select>
-                <ui-icon-button icon="add" @click="addCollection()"></ui-icon-button>
+                <ui-select v-model="selectedOption" :options="options" @selected="onSelectCollection($event)" data-cy="collection-list"></ui-select>
+                <ui-icon-button icon="add" @click="addCollection()" data-cy="add-collection-button"></ui-icon-button>
             </v-container>
             <br/>
             <ui-button @click="updateAllCollections">Update all collections</ui-button>

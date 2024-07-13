@@ -34,12 +34,12 @@
 </script>
 
 <template>
-    <ui-dialog v-model="open" @confirm="onConfirm">
+    <ui-dialog v-model="open" @confirm="onConfirm" data-cy="remove-child-collection-dialog">
         <ui-dialog-title>Remove the child collection ?</ui-dialog-title>
         <ui-dialog-content>
             Do you really want to remove the collection <a v-bind:href="childCollection.url">{{ childCollection.name }}</a> from the collection <a v-bind:href="collection.url">{{ collection.name }}</a>? <br/><br/>
             This will not remove the distant Deezer playlist, and the remaining tracks should be removed from the playlist manually.
         </ui-dialog-content>
-        <ui-dialog-actions></ui-dialog-actions>
+        <ui-dialog-actions data-cy="remove-child-collection-dialog-actions"></ui-dialog-actions>
     </ui-dialog>
 </template>

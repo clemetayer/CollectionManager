@@ -1,0 +1,271 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/collection/init",
+      "body": {
+        "type": "JSON",
+        "json": {
+          "name": "test",
+          "from_playlist": "https://www.deezer.com/fr/playlist/123456"
+        }
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/collection/init",
+      "body": {
+        "type": "JSON",
+        "json": {
+          "name": "test_new"
+        }
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection/list"
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": [
+          {
+            "name": "test_playlist_1",
+            "deezer_id": "123456",
+            "url": "https://www.deezer.com/playlist/123456"
+          },
+          {
+            "name": "test_new",
+            "deezer_id": "456789",
+            "url": "https://www.deezer.com/fr/playlist/456789"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection/{id}",
+      "pathParameters": {
+        "id": "123456"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": {
+          "name": "test_playlist_1",
+          "deezer_id": "123456",
+          "url": "https://www.deezer.com/playlist/123456"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection/{id}",
+      "pathParameters": {
+        "id": "456789"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": {
+          "name": "test_new",
+          "deezer_id": "456789",
+          "url": "https://www.deezer.com/fr/playlist/456789"
+        }
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection/tracks/{id}",
+      "pathParameters": {
+        "id": "123456"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": [
+          {
+            "id": 1,
+            "deezer_id": "1",
+            "title": "test_track_1",
+            "link": "https://www.deezer.com/track/1",
+            "artist": "test_artist_1"
+          },
+          {
+            "id": 2,
+            "deezer_id": "2",
+            "title": "test_track_2",
+            "link": "https://www.deezer.com/track/2",
+            "artist": "test_artist_2"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection/tracks/{id}",
+      "pathParameters": {
+        "id": "456789"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": [
+          {
+            "id": 3,
+            "deezer_id": "3",
+            "title": "test_track_3",
+            "link": "https://www.deezer.com/track/3",
+            "artist": "test_artist_1"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection-management/children/{id}",
+      "pathParameters": {
+        "id": "123456"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": [
+          {
+            "name": "test_new",
+            "deezer_id": "456789",
+            "url": "https://www.deezer.com/fr/playlist/456789"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "GET",
+      "path": "/collection-management/children/{id}",
+      "pathParameters": {
+        "id": "456789"
+      }
+    },
+    "httpResponse": {
+      "headers": {
+        "access-control-allow-origin": "*"
+      },
+      "body": {
+        "type": "JSON",
+        "json": []
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/collection-management/add-collection",
+      "body": {
+        "type": "JSON",
+        "json": {
+          "parent_collection_id": "123456",
+          "child_collection_id": "456789"
+        }
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "PUT",
+      "path": "/collection-management/refresh-collection/{id}",
+      "pathParameters": {
+        "id": "123456"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "PUT",
+      "path": "/collection-management/refresh-all-collection"
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "DELETE",
+      "path": "/collection/{id}",
+      "pathParameters": {
+        "id": "456789"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "access-control-allow-origin": "*"
+      }
+    }
+  }
+]
